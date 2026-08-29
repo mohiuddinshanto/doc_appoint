@@ -13,6 +13,7 @@ import {
   selectAppointments,
   useBookingStore,
 } from "@/store/useBookingStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import type { Appointment } from "@/types";
 
 export default function AppointmentsPage() {
@@ -20,6 +21,7 @@ export default function AppointmentsPage() {
   const appointments = useBookingStore(selectAppointments);
   const cancelAppointment = useBookingStore((s) => s.cancelAppointment);
   const isLoading = useBookingStore((s) => s.isLoading);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
 
@@ -54,7 +56,13 @@ export default function AppointmentsPage() {
       <main className="mx-auto max-w-5xl px-4 py-8">
         <h2 className="mb-6 text-xl font-bold text-gray-900">My Bookings</h2>
 
-        {!mounted ? null : appointments.length === 0 ? (
+        {!mounted ? null : !isAuthenticated ? (
+          <EmptyState
+            icon={<LuCalendarCheck2 />}
+            title="Sign in to view your appointments"
+            body="Your appointment history is only available to signed-in users."
+          />
+        ) : appointments.length === 0 ? (
           <EmptyState
             icon={<LuCalendarCheck2 />}
             title="No appointments yet"
