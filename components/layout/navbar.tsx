@@ -52,8 +52,8 @@ export function AppNavbar() {
   const handleSignOut = async () => {
     await authClient.signOut();
     logout();
-    // Appointments are persisted locally for the active session. Clear them so
-    // a later visitor to this browser cannot see the previous user's data.
+    // Keep the previous user's appointments out of the UI. Their history is
+    // loaded again from the backend after the next successful sign-in.
     useBookingStore.getState().reset();
     useBookingStore.persist.clearStorage();
     toast.success("Signed out successfully.");

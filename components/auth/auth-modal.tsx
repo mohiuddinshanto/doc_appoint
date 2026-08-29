@@ -23,6 +23,8 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
+
+  //TypeScript-এর Union Type ব্যবহার করে আমরা activeTab state কে "login" বা "register" এর মধ্যে সীমাবদ্ধ করেছি। এটি নিশ্চিত করে যে activeTab শুধুমাত্র এই দুইটি মানের মধ্যে একটি হতে পারে, যা কোডের নিরাপত্তা এবং স্থিতিশীলতা বৃদ্ধি করে। তাই আমরা <"login" | "register"> এর মাধ্যমে activeTab state এর টাইপ নির্ধারণ করেছি।
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
 
@@ -199,7 +201,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
                   />
                   <Input
                     label="Password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="At least 6 characters"
                     type="password"
                     variant="bordered"
                     startContent={<LuLock className="text-gray-400" size={18} />}
@@ -264,7 +266,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
 
             <ModalFooter className="border-t border-gray-100 pt-3">
               <p className="w-full text-center text-xs text-gray-400">
-                Protected by Better Auth â€¢ End-to-End JWT Verified
+                Protected by Better Auth & End-to-End JWT Verified
               </p>
             </ModalFooter>
           </>

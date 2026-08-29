@@ -218,6 +218,23 @@ export const useBookingStore = create<BookingStore>()(
           }
         },
 
+        loadAppointments: async (): Promise<void> => {
+          set({ isLoading: true, error: null });
+
+          try {
+            const appointments = await _getAppointmentsApi();
+            const bookedSlotKeys = Object.fromEntries(
+              appointments
+                .filter((appointment) => appointment.status === "upcoming")
+                .map((appointment) => [appointment.compositeSlotKey, appointment.id])
+            );
+
+            set({ appointments, bookedSlotKeys, isLoading: false, error: null });
+          } catch (err) {
+            set({ isLoading: false, error: extractMessage(err) });
+          }
+        },
+
         // যদি compositeKey এর মাধ্যমে কোন স্লট ইতিমধ্যেই বুক করা থাকে কিনা তা চেক করা হয়।
         isSlotBooked: (compositeKey: string): boolean =>
           Boolean(get().bookedSlotKeys[compositeKey]),
@@ -435,4 +452,43 @@ async function _cancelAppointmentApi(appointmentId: string): Promise<void> {
     }
     throw new Error(message);
   }
+}
+
+async function _getAppointmentsApi(): Promise<Appointment[]> {
+  const token = await getBackendToken();
+  const res = await fetch(`${BACKEND_URL}/appoints`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error("Unable to load your appointments.");
+  }
+
+  const data: unknown = await res.json();
+  const records = Array.isArray(data)
+    ? data
+    : data && typeof data === "object" && Array.isArray((data as { data?: unknown }).data)
+      ? (data as { data: unknown[] }).data
+      : data && typeof data === "object" && Array.isArray((data as { appointments?: unknown }).appointments)
+        ? (data as { appointments: unknown[] }).appointments
+      : [];
+
+  return records.map((record) => normalizeAppointment(record));
+}
+
+function normalizeAppointment(record: unknown): Appointment {
+  const appointment = record as Partial<Appointment> & { _id?: unknown };
+  const id = appointment.id ?? appointment._id;
+
+  if (typeof id !== "string") {
+    throw new Error("The appointments response contains an invalid appointment ID.");
+  }
+
+  return {
+    ...appointment,
+    id,
+    compositeSlotKey:
+      appointment.compositeSlotKey ??
+      buildSlotKey(appointment.serviceId ?? "", appointment.date ?? "", appointment.slotId ?? ""),
+  } as Appointment;
 }

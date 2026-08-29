@@ -8,6 +8,8 @@ type DoctorCardProps = {
 };
 
 export function DoctorCard({ doctor, onBook }: DoctorCardProps) {
+
+  console.log("DoctorCard rendered for:", doctor);
   return (
     <Card className="border border-slate-200">
       <CardBody className="gap-4">
@@ -25,7 +27,8 @@ export function DoctorCard({ doctor, onBook }: DoctorCardProps) {
 
         <p className="text-sm text-slate-600">{doctor.description}</p>
         <p className="flex items-center gap-2 text-sm text-slate-500"><LuMapPin /> {doctor.tags?.[2] || "Clinic"}</p>
-        <p className="flex items-center gap-2 text-sm text-slate-500"><LuCalendar /> {doctor.availableDays?.join(", ")}</p>
+       
+        <p className="flex items-center gap-2 text-sm text-slate-500"><LuClock /> {doctor.availableDays?.join(", ") || "Not available"}</p>
 
         <div className="flex items-center justify-between">
           <b>${doctor.price}</b>

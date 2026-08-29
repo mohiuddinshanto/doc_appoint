@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { LuCalendarCheck2 } from "react-icons/lu";
 
@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useMounted } from "@/hooks/use-mounted";
 import {
   selectAppointments,
+  selectError,
   useBookingStore,
 } from "@/store/useBookingStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -20,10 +21,22 @@ export default function AppointmentsPage() {
   const mounted = useMounted();
   const appointments = useBookingStore(selectAppointments);
   const cancelAppointment = useBookingStore((s) => s.cancelAppointment);
+  const loadAppointments = useBookingStore((s) => s.loadAppointments);
   const isLoading = useBookingStore((s) => s.isLoading);
+  const error = useBookingStore(selectError);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const userId = useAuthStore((s) => s.user?.id);
 
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
+  const [loadedForUserId, setLoadedForUserId] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (!mounted || !isAuthenticated || !userId) return;
+
+    void loadAppointments().finally(() => setLoadedForUserId(userId));
+  }, [isAuthenticated, loadAppointments, mounted, userId]);
+
+  const hasLoadedAppointments = loadedForUserId === userId;
 
   const upcoming = appointments
     .filter((a) => a.status === "upcoming")
@@ -61,6 +74,18 @@ export default function AppointmentsPage() {
             icon={<LuCalendarCheck2 />}
             title="Sign in to view your appointments"
             body="Your appointment history is only available to signed-in users."
+          />
+        ) : !hasLoadedAppointments ? (
+          <EmptyState
+            icon={<LuCalendarCheck2 />}
+            title="Loading your appointments"
+            body="Retrieving your booking history..."
+          />
+        ) : error ? (
+          <EmptyState
+            icon={<LuCalendarCheck2 />}
+            title="Could not load appointments"
+            body={error}
           />
         ) : appointments.length === 0 ? (
           <EmptyState

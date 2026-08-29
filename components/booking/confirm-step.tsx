@@ -18,7 +18,7 @@ type FormValues = {
   notes: string;
 };
 
-type FormErrors = Partial<Record<"customerName" | "customerEmail", string>>;
+type FormErrors = Partial<Record<"customerName" | "customerEmail" | "customerPhone", string>>;
 
 const EMPTY_FORM: FormValues = {
   customerName: "",
@@ -38,28 +38,38 @@ export function ConfirmStep() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // এইটার মাধ্যমে আমরা ফরম ফিল্ড আপডেট করতে পারি এবং সেই ফিল্ডের শো করা error মুছে ফেলতে পারি।
   const updateField =
     (field: keyof FormValues) =>
-    (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      setForm((f) => ({ ...f, [field]: e.target.value }));
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    };
+      (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      ) => {
+        setForm((f) => ({ ...f, [field]: e.target.value }));
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      };
 
   function validate(): boolean {
     const next: FormErrors = {};
+
     if (!form.customerName.trim())
       next.customerName = "Full name is required.";
+
     if (!form.customerEmail.trim()) {
       next.customerEmail = "Email is required.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) {
       next.customerEmail = "Please enter a valid email address.";
     }
+
+    if (!form.customerPhone.trim()) {
+      next.customerPhone = "Phone is required.";
+    }
+
     setErrors(next);
+
     return Object.keys(next).length === 0;
   }
 
+  
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate() || submitting) return;
@@ -73,7 +83,7 @@ export function ConfirmStep() {
     } else {
       toast.error(
         useBookingStore.getState().error ??
-          "Something went wrong. Please try again."
+        "Something went wrong. Please try again."
       );
     }
   }
@@ -127,7 +137,7 @@ export function ConfirmStep() {
             isInvalid={Boolean(errors.customerName)}
             errorMessage={errors.customerName}
             radius="lg"
-            classNames={{ inputWrapper: "bg-gray-50" }}
+            classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "mb-2",label: "pb-1.5" }}
           />
           <Input
             type="email"
@@ -139,19 +149,21 @@ export function ConfirmStep() {
             isInvalid={Boolean(errors.customerEmail)}
             errorMessage={errors.customerEmail}
             radius="lg"
-            classNames={{ inputWrapper: "bg-gray-50" }}
+           classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "m-2",label: "pb-1.5" }}
           />
         </div>
 
         <Input
           type="tel"
-          label="Phone (optional)"
+          label="Phone"
           labelPlacement="outside"
           placeholder="+1 555 000 0000"
           value={form.customerPhone}
+          isInvalid={Boolean(errors.customerPhone)}
+          errorMessage={errors.customerPhone}
           onChange={updateField("customerPhone")}
           radius="lg"
-          classNames={{ inputWrapper: "bg-gray-50" }}
+          classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "m-2",label: "pb-1.5" }}
         />
 
         <Textarea

@@ -4,17 +4,17 @@ import { LuHeart, LuSearch } from "react-icons/lu";
 type HomeHeroProps = {
   search: string;
   setSearch: (value: string) => void;
-  onSearch: () => void;
+  handleSearch: () => void;
 };
 
 export function HomeHero({
   search,
   setSearch,
-  onSearch,
+  handleSearch,
 }: HomeHeroProps) {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    onSearch();
+    handleSearch();
   }
 
   return (

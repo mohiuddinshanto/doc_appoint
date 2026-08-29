@@ -2,7 +2,8 @@ import type { Service } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
-// Gets doctors from Express backend and changes them into frontend Service data.
+//ডাক্তারদের তথ্য পাওয়ার জন্য একটি ফাংশন যা সার্চ এবং বিশেষত্বের ভিত্তিতে ডাক্তারদের তালিকা ফেরত দেয়।
+// আর এটি যেহেতু একটি অ্যাসিঙ্ক্রোনাস ফাংশন, তাই এটি একটি প্রমিস রিটার্ন করে যা ডাক্তারদের সার্ভিসের অ্যারে প্রদান করে।
 export async function getDoctors(search = "", specialty = ""): Promise<Service[]> {
   const params = new URLSearchParams();
   if (search) {
@@ -22,8 +23,7 @@ export async function getDoctors(search = "", specialty = ""): Promise<Service[]
   const doctors = await response.json();
 
   return doctors.map((doctor: any) => {
-    // MongoDB owns document IDs. Do not invent a client-side fallback ID,
-    // because it would not refer to a real doctor in the database.
+    // ডক্টর অবজেক্টের _id প্রপার্টি চেক করা হচ্ছে। যদি এটি স্ট্রিং না হয় বা অনুপস্থিত থাকে, তাহলে একটি এরর থ্রো করা হচ্ছে।
     if (typeof doctor._id !== "string" || !doctor._id) {
       throw new Error("A doctor returned by the API is missing its MongoDB _id.");
     }
@@ -42,8 +42,10 @@ export async function getDoctors(search = "", specialty = ""): Promise<Service[]
       currency: doctor.currency || "USD",
       rating: doctor.rating || 4.9,
       reviewCount: doctor.reviewCount || doctor.reviewsCount || 0,
-      imageUrl: doctor.avatar || doctor.image || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400",
-      availableDays: doctor.availableDays || [],
+      imageUrl: doctor.avatar || doctor.image || "...",
+
+      availableDays: doctor.availability || [],
+
       tags: [category, "", doctor.location || "Clinic"],
     };
   });

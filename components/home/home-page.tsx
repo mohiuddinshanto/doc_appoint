@@ -25,15 +25,15 @@ export function HomePage() {
   const [doctors, setDoctors] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get active query params
+  // searchParams থেকে specialty query parameter নেওয়া হচ্ছে। যদি এটি না থাকে, তাহলে ডিফল্ট মান হিসেবে "All Specialties" ব্যবহার করা হচ্ছে।
   const specialty = searchParams.get("specialty") || "All Specialties";
 
-  // Sync the local search state with the URL query parameter whenever the URL changes
+  // searchParams থেকে search query parameter নেওয়া হচ্ছে। যদি এটি না থাকে, তাহলে ডিফল্ট মান হিসেবে খালি স্ট্রিং ব্যবহার করা হচ্ছে।
   useEffect(() => {
     setSearch(searchParams.get("search") || "");
   }, [searchParams]);
 
-  // Load doctors whenever search or specialty query parameters change
+  // ডাক্তারদের তথ্য লোড করার জন্য একটি ফাংশন যা সার্চ এবং বিশেষত্বের ভিত্তিতে ডাক্তারদের তালিকা ফেরত দেয়। এটি একটি অ্যাসিঙ্ক্রোনাস ফাংশন, তাই এটি একটি প্রমিস রিটার্ন করে যা ডাক্তারদের সার্ভিসের অ্যারে প্রদান করে।
   async function loadDoctors(searchText = "", specialtyText = "All Specialties") {
     setLoading(true);
 
@@ -50,7 +50,7 @@ export function HomePage() {
     }
   }
 
-  // Fetch doctors whenever searchParams changes
+  // useEffect হুক ব্যবহার করে যখন searchParams পরিবর্তিত হয়, তখন loadDoctors ফাংশন কল করা হচ্ছে। এটি নিশ্চিত করে যে যখন ব্যবহারকারী সার্চ বা বিশেষত্ব পরিবর্তন করে, তখন ডাক্তারদের তালিকা আপডেট হয়।
   useEffect(() => {
     const currentSearch = searchParams.get("search") || "";
     const currentSpecialty = searchParams.get("specialty") || "All Specialties";
@@ -94,7 +94,7 @@ export function HomePage() {
       <HomeHero
         search={search}
         setSearch={setSearch}
-        onSearch={handleSearch}
+        handleSearch={handleSearch}
       />
 
       <main className="mx-auto max-w-6xl px-4 py-12">

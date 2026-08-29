@@ -48,6 +48,7 @@ export interface Service {
   /** Tags used for full-text search beyond name/category. */
   tags?: string[];
   availableDays?: string[];
+  availableTimes?: string[];
 }
 
 export interface TimeSlot {
@@ -179,6 +180,8 @@ export interface BookingStoreActions {
   // Core booking logic
   bookSlot: (payload: BookingFormValues) => Promise<Appointment | null>;
   cancelAppointment: (appointmentId: string) => Promise<boolean>;
+  /** Reload the signed-in user's appointment history from the backend. */
+  loadAppointments: () => Promise<void>;
 
   // Computed / derived helpers (called synchronously inside components)
   isSlotBooked: (compositeKey: string) => boolean;
