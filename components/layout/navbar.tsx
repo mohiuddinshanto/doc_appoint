@@ -52,6 +52,10 @@ export function AppNavbar() {
   const handleSignOut = async () => {
     await authClient.signOut();
     logout();
+    // Appointments are persisted locally for the active session. Clear them so
+    // a later visitor to this browser cannot see the previous user's data.
+    useBookingStore.getState().reset();
+    useBookingStore.persist.clearStorage();
     toast.success("Signed out successfully.");
   };
 
@@ -81,17 +85,17 @@ export function AppNavbar() {
           </Link>
         </NavbarBrand>
 
+        {/* NavbarContent ব্যবহার করে নেভিগেশন লিঙ্কগুলি প্রদর্শন করা হয়েছে। sm স্ক্রিন সাইজের উপরে লিঙ্কগুলি প্রদর্শিত হবে, এবং ছোট স্ক্রিনে হ্যামবার্গার মেনু ব্যবহার করা হবে। */}
         <NavbarContent justify="center" className="hidden sm:flex gap-1">
           {NAV_ITEMS.map(({ href, label }) => (
             <NavbarItem key={href} isActive={isActive(href)}>
               <Link
                 href={href}
                 size="sm"
-                className={`rounded-lg px-3.5 py-2 font-medium transition-all ${
-                  isActive(href)
-                    ? "bg-indigo-50 text-indigo-700 font-semibold"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                className={`rounded-lg px-3.5 py-2 font-medium transition-all ${isActive(href)
+                  ? "bg-indigo-50 text-indigo-700 font-semibold"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
               >
                 {label}
               </Link>
@@ -99,7 +103,9 @@ export function AppNavbar() {
           ))}
         </NavbarContent>
 
+
         <NavbarContent justify="end" className="gap-3">
+          {/* My Appointments লিঙ্কের জন্য একটি Badge ব্যবহার করা হয়েছে যা upcomingCount দেখায়। যদি mounted না হয় বা upcomingCount শূন্য হয়, তবে Badge অদৃশ্য থাকবে। */}
           <NavbarItem>
             <Badge
               content={mounted ? upcomingCount : 0}
@@ -111,11 +117,10 @@ export function AppNavbar() {
               <Link
                 href="/appointments"
                 size="sm"
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-                  isActive("/appointments")
-                    ? "bg-indigo-50 text-indigo-700 font-semibold"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${isActive("/appointments")
+                  ? "bg-indigo-50 text-indigo-700 font-semibold"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 <CalendarCheck size={16} />
                 <span className="hidden sm:inline">My Appointments</span>
@@ -123,6 +128,7 @@ export function AppNavbar() {
             </Badge>
           </NavbarItem>
 
+          {/* ব্যবহারকারীর প্রোফাইল এবং লগআউটের জন্য একটি Dropdown ব্যবহার করা হয়েছে। যদি ব্যবহারকারী লগইন না করে থাকে, তবে একটি Sign In বাটন প্রদর্শিত হবে যা AuthModal খুলবে। */}
           <NavbarItem>
             {mounted && isAuthenticated && user ? (
               <Dropdown placement="bottom-end">
@@ -171,6 +177,7 @@ export function AppNavbar() {
           </NavbarItem>
         </NavbarContent>
 
+        {/*/ ছোট স্ক্রিনে হ্যামবার্গার মেনু প্রদর্শনের জন্য NavbarContent ব্যবহার করা হয়েছে। একটি বাটন ব্যবহার করে মেনু খোলা এবং বন্ধ করা যায়।*/}
         <NavbarContent justify="end" className="sm:hidden gap-1">
           <NavbarItem>
             <Button
@@ -195,11 +202,10 @@ export function AppNavbar() {
                   key={href}
                   href={href}
                   onPress={() => setMobileOpen(false)}
-                  className={`rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${
-                    isActive(href)
-                      ? "bg-indigo-50 text-indigo-700 font-semibold"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                  className={`rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${isActive(href)
+                    ? "bg-indigo-50 text-indigo-700 font-semibold"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
                 >
                   {label}
                 </Link>
@@ -207,11 +213,10 @@ export function AppNavbar() {
               <Link
                 href="/appointments"
                 onPress={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${
-                  isActive("/appointments")
-                    ? "bg-indigo-50 text-indigo-700 font-semibold"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                className={`flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${isActive("/appointments")
+                  ? "bg-indigo-50 text-indigo-700 font-semibold"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
               >
                 <CalendarCheck size={16} />
                 My Appointments
@@ -228,4 +233,3 @@ export function AppNavbar() {
     </>
   );
 }
-
