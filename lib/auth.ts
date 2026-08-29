@@ -1,0 +1,43 @@
+import { betterAuth } from "better-auth";
+import { MongoClient } from "mongodb";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { jwt } from "better-auth/plugins";
+
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+  throw new Error("MONGODB_URI is required for Better Auth.");
+}
+
+// Reuse the client through Next.js development reloads and retry transient
+// writes that Atlas reports during a catalog update.
+const globalForMongo = globalThis as typeof globalThis & {
+  mongoClient?: MongoClient;
+};
+
+const client =
+  globalForMongo.mongoClient ??
+  new MongoClient(mongoUri, {
+    retryWrites: true,
+    maxPoolSize: 10,
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForMongo.mongoClient = client;
+}
+
+// Use the same database as the Express backend instead of MongoDB's default
+// "test" database.
+const db = client.db(process.env.MONGODB_DB_NAME || "docappoint_db");
+
+export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: process.env.BETTER_AUTH_SECRET,
+  // Avoid multi-document transactions during sign-up. Atlas can transiently
+  // abort those while its collection catalog is changing.
+  database: mongodbAdapter(db),
+  plugins: [jwt()],
+  emailAndPassword: {
+    enabled: true,
+  },
+});
