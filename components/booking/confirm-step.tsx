@@ -27,7 +27,7 @@ const EMPTY_FORM: FormValues = {
   notes: "",
 };
 
-/** Wizard step 3 — review the selection and capture customer details. */
+// এইখানে আমরা ফরম ফিল্ড আপডেট করতে পারি এবং সেই ফিল্ডের শো করা error মুছে ফেলতে পারি।
 export function ConfirmStep() {
   const router = useRouter();
   const { service, slot, date } = useBookingStore(selectSelection);
