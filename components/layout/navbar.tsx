@@ -86,7 +86,7 @@ export function AppNavbar() {
         </NavbarBrand>
 
         {/* NavbarContent ব্যবহার করে নেভিগেশন লিঙ্কগুলি প্রদর্শন করা হয়েছে। sm স্ক্রিন সাইজের উপরে লিঙ্কগুলি প্রদর্শিত হবে, এবং ছোট স্ক্রিনে হ্যামবার্গার মেনু ব্যবহার করা হবে। */}
-        <NavbarContent justify="center" className="hidden sm:flex gap-1">
+        <NavbarContent justify="center" className="hidden lg:flex gap-1">
           {NAV_ITEMS.map(({ href, label }) => (
             <NavbarItem key={href} isActive={isActive(href)}>
               <Link
@@ -104,7 +104,7 @@ export function AppNavbar() {
         </NavbarContent>
 
 
-        <NavbarContent justify="end" className="gap-3">
+        <NavbarContent justify="end" className="hidden lg:flex gap-3">
           {/* My Appointments লিঙ্কের জন্য একটি Badge ব্যবহার করা হয়েছে যা upcomingCount দেখায়। যদি mounted না হয় বা upcomingCount শূন্য হয়, তবে Badge অদৃশ্য থাকবে। */}
           <NavbarItem>
             <Badge
@@ -178,7 +178,7 @@ export function AppNavbar() {
         </NavbarContent>
 
         {/*/ ছোট স্ক্রিনে হ্যামবার্গার মেনু প্রদর্শনের জন্য NavbarContent ব্যবহার করা হয়েছে। একটি বাটন ব্যবহার করে মেনু খোলা এবং বন্ধ করা যায়।*/}
-        <NavbarContent justify="end" className="sm:hidden gap-1">
+        <NavbarContent justify="end" className="lg:hidden gap-1">
           <NavbarItem>
             <Button
               isIconOnly
@@ -194,7 +194,7 @@ export function AppNavbar() {
       </HeroNavbar>
 
       {mobileOpen && (
-        <div className="sm:hidden border-b border-gray-100 bg-white/95 backdrop-blur-md shadow-md">
+        <div className="border-b border-gray-100 bg-white/95 shadow-md backdrop-blur-md lg:hidden">
           <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
             <nav className="flex flex-col gap-1">
               {NAV_ITEMS.map(({ href, label }) => (
@@ -221,6 +221,43 @@ export function AppNavbar() {
                 <CalendarCheck size={16} />
                 My Appointments
               </Link>
+
+              <div className="mt-2 border-t border-gray-100 pt-3">
+                {mounted && isAuthenticated && user ? (
+                  <div className="flex items-center justify-between gap-3 px-3.5">
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400">Signed in as</p>
+                      <p className="truncate text-sm font-semibold text-gray-800">
+                        {user.email}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      color="danger"
+                      variant="flat"
+                      startContent={<LuLogOut size={15} />}
+                      onPress={() => {
+                        setMobileOpen(false);
+                        void handleSignOut();
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    color="primary"
+                    className="w-full font-semibold"
+                    startContent={<LuLogIn size={16} />}
+                    onPress={() => {
+                      setMobileOpen(false);
+                      setAuthModalOpen(true);
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                )}
+              </div>
             </nav>
           </div>
         </div>
