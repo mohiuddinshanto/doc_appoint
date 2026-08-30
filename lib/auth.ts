@@ -3,6 +3,13 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { jwt } from "better-auth/plugins";
 
+const getAppBaseUrl = () => {
+  if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+};
+
 const mongoUri = process.env.MONGODB_URI;
 
 if (!mongoUri) {
@@ -31,7 +38,7 @@ if (process.env.NODE_ENV !== "production") {
 const db = client.db(process.env.MONGODB_DB_NAME || "docappoint_db");
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: getAppBaseUrl(),
   secret: process.env.BETTER_AUTH_SECRET,
   // Avoid multi-document transactions during sign-up. Atlas can transiently
   // abort those while its collection catalog is changing.

@@ -382,7 +382,7 @@ if (typeof window !== "undefined") {
 
 
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function _createAppointmentApi({
   service,
