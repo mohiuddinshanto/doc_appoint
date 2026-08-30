@@ -1,7 +1,6 @@
 "use client";
 
 import { Button, Input, Textarea } from "@heroui/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -33,6 +32,7 @@ export function ConfirmStep() {
   const { service, slot, date } = useBookingStore(selectSelection);
   const bookSlot = useBookingStore((s) => s.bookSlot);
   const clearSelection = useBookingStore((s) => s.clearSelection);
+  const setStep = useBookingStore((s) => s.setStep);
 
   const [form, setForm] = useState<FormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -95,12 +95,13 @@ export function ConfirmStep() {
 
   return (
     <div>
-      <Link
-        href="/booking"
+      <button
+        type="button"
         className="mb-4 inline-flex items-center gap-1 text-sm text-indigo-500 hover:underline"
+        onClick={() => setStep("slot")}
       >
         <FaArrowLeft size={12} /> Change time
-      </Link>
+      </button>
       <h2 className="mb-1 text-xl font-bold text-gray-900">
         Confirm Your Booking
       </h2>
