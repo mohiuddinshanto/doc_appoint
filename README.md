@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ServiceSlot
+
+A responsive appointment-booking application for finding a doctor or service, choosing an available date and time, and managing appointments in one place.
+
+Built as a frontend internship project with **Next.js**, **TypeScript**, and **Tailwind CSS**.
+
+![ServiceSlot appointment booking dashboard](public/Images/doc-appoint.jpg)
+
+## Features
+
+- Browse doctors and services with key details such as specialty, fee, experience, and availability.
+- Search by doctor name or specialty.
+- Select a service, date, and available time slot through a guided booking flow.
+- Validate customer name, email address, and phone number before confirming a booking.
+- Prevent a booked slot from being selected again; cancelling an upcoming appointment releases that slot.
+- View upcoming and cancelled appointments from **My Appointments**.
+- Persist booking state in `localStorage` and keep it synchronized across browser tabs.
+- Register and sign in with email and password.
+- Responsive interface for mobile and desktop screens.
+
+## Tech Stack
+
+- [Next.js 16](https://nextjs.org/)
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Zustand](https://zustand.docs.pmnd.rs/) for client-side state and persistence
+- [HeroUI](https://www.heroui.com/) for UI components
+- Better Auth and MongoDB for authentication and appointment data
+
+## Pages
+
+| Route | Description |
+| --- | --- |
+| `/` | Doctor/service catalogue with search and specialty filtering. |
+| `/booking` | Step-by-step service, date/time, and booking-form flow. |
+| `/appointments` | Upcoming and past appointment history with cancellation. |
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/mohiuddinshanto/doc_appoint.git
+cd doc_appoint
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Add environment variables
+
+Create a `.env.local` file in the project root. Do not commit this file.
+
+```env
+NEXT_PUBLIC_BACKEND_URL=https://your-backend-url.vercel.app
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=replace-with-a-secure-random-secret
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/
+MONGODB_DB_NAME=docappoint_db
+```
+
+For a deployed application, set `BETTER_AUTH_URL` to the frontend's production URL and add the same variables in the Vercel project settings.
+
+### 4. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev     # Start the development server
+npm run build   # Create an optimized production build
+npm run start   # Start the production server
+npm run lint    # Run ESLint
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+app/                 # App Router pages and authentication route
+components/          # Reusable booking, appointment, home, and UI components
+lib/                 # Authentication, API, mock-slot, and utility functions
+store/               # Zustand stores for services, auth, and bookings
+types/               # Shared TypeScript interfaces and types
+public/Images/       # Project screenshots
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Booking Rules
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Each appointment is identified by a combination of service, date, and slot. Once a booking is confirmed, the matching slot is marked unavailable immediately. When an upcoming appointment is cancelled, its slot becomes selectable again.
 
-## Deploy on Vercel
+## Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Mohiuddin Shanto**<br>
+Frontend Development Intern Candidate

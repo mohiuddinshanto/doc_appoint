@@ -150,7 +150,8 @@ export const useBookingStore = create<BookingStore>()(
                 return { isLoading: false, error: extractMessage(err) };
               }
               // যদি আমাদের অস্থায়ী লক এখনও আছে, তাহলে আমরা এটিকে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলে সেই সময় আর উক্ত উজারকে আমরা  এরর দেখাই।
-              const { [compositeKey]: _pendingLock, ...bookedSlotKeys } = s.bookedSlotKeys;
+              const bookedSlotKeys = { ...s.bookedSlotKeys };
+              delete bookedSlotKeys[compositeKey];
               return { bookedSlotKeys, isLoading: false, error: extractMessage(err) };
             });
 
@@ -180,7 +181,8 @@ export const useBookingStore = create<BookingStore>()(
 
           set((s) => {
             // এর মাধ্যমে আমরা বুকিং বাতিল করার সময় লোকাল স্টোরেজে বুকিং স্লট লক করে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলতে না পারে। 
-            const { [compositeSlotKey]: removed, ...restKeys } = s.bookedSlotKeys;
+            const restKeys = { ...s.bookedSlotKeys };
+            delete restKeys[compositeSlotKey];
             return {
               appointments: s.appointments.map((a) =>
                 a.id === appointmentId

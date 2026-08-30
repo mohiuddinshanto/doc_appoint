@@ -1,5 +1,5 @@
 ﻿import { Avatar, Button, Card, CardBody } from "@heroui/react";
-import { LuCalendar, LuClock, LuMapPin, LuStar } from "react-icons/lu";
+import { LuClock, LuMapPin, LuStar } from "react-icons/lu";
 import type { Service } from "@/types";
 
 type DoctorCardProps = {
@@ -8,8 +8,6 @@ type DoctorCardProps = {
 };
 
 export function DoctorCard({ doctor, onBook }: DoctorCardProps) {
-
-  console.log("DoctorCard rendered for:", doctor);
   return (
     <Card className="border border-slate-200">
       <CardBody className="gap-4">

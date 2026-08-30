@@ -17,7 +17,6 @@ import {
 } from "@heroui/react";
 import {
   LuCalendarCheck as CalendarCheck,
-  LuUser,
   LuLogOut,
   LuStethoscope,
   LuLogIn,
@@ -33,7 +32,8 @@ import { AuthModal } from "@/components/auth/auth-modal";
 import { authClient } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Doctors & Services" },
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Services" },
   { href: "/booking", label: "Book Appointment" },
 ] as const;
 

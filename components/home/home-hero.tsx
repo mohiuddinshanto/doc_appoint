@@ -1,16 +1,18 @@
 ﻿import { Button, Input } from "@heroui/react";
-import { LuHeart, LuSearch } from "react-icons/lu";
+import { LuArrowRight, LuHeart, LuSearch } from "react-icons/lu";
 
 type HomeHeroProps = {
   search: string;
   setSearch: (value: string) => void;
   handleSearch: () => void;
+  onBrowseServices: () => void;
 };
 
 export function HomeHero({
   search,
   setSearch,
   handleSearch,
+  onBrowseServices,
 }: HomeHeroProps) {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -44,6 +46,14 @@ export function HomeHero({
             Search
           </Button>
         </form>
+        <Button
+          variant="light"
+          className="mt-5 font-semibold text-white"
+          endContent={<LuArrowRight />}
+          onPress={onBrowseServices}
+        >
+          Browse all doctors & services
+        </Button>
       </div>
     </section>
   );

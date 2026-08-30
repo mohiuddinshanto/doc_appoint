@@ -5,7 +5,7 @@
  * `buildSlots` with a fetch to GET /services/:id/slots?date=YYYY-MM-DD.
  */
 
-import type { Service, TimeSlot } from "@/types";
+import type { TimeSlot } from "@/types";
 
 // =============================================================================
 // SEED SERVICES

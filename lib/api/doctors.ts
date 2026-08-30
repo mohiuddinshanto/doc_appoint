@@ -2,6 +2,25 @@ import type { Service } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
+interface BackendDoctor {
+  _id: string;
+  name?: string;
+  title?: string;
+  specialty?: string;
+  bio?: string;
+  description?: string;
+  price?: number;
+  fee?: number;
+  currency?: string;
+  rating?: number;
+  reviewCount?: number;
+  reviewsCount?: number;
+  avatar?: string;
+  image?: string;
+  availability?: string[];
+  location?: string;
+}
+
 //ডাক্তারদের তথ্য পাওয়ার জন্য একটি ফাংশন যা সার্চ এবং বিশেষত্বের ভিত্তিতে ডাক্তারদের তালিকা ফেরত দেয়।
 // আর এটি যেহেতু একটি অ্যাসিঙ্ক্রোনাস ফাংশন, তাই এটি একটি প্রমিস রিটার্ন করে যা ডাক্তারদের সার্ভিসের অ্যারে প্রদান করে।
 export async function getDoctors(search = "", specialty = ""): Promise<Service[]> {
@@ -20,9 +39,13 @@ export async function getDoctors(search = "", specialty = ""): Promise<Service[]
     throw new Error("Could not load doctors");
   }
 
-  const doctors = await response.json();
+  const doctors: unknown = await response.json();
 
-  return doctors.map((doctor: any) => {
+  if (!Array.isArray(doctors)) {
+    throw new Error("The doctors API returned an invalid response.");
+  }
+
+  return doctors.map((doctor: BackendDoctor) => {
     // ডক্টর অবজেক্টের _id প্রপার্টি চেক করা হচ্ছে। যদি এটি স্ট্রিং না হয় বা অনুপস্থিত থাকে, তাহলে একটি এরর থ্রো করা হচ্ছে।
     if (typeof doctor._id !== "string" || !doctor._id) {
       throw new Error("A doctor returned by the API is missing its MongoDB _id.");
