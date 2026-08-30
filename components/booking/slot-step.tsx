@@ -53,15 +53,15 @@ export function SlotStep() {
       </h2>
       <p className="mb-5 text-sm text-gray-500">
         <span className="font-medium text-gray-700">{selection.service?.name}</span>
-        {" Â· "}
-        {selection.service?.durationMinutes} min{" Â· "}
+        {" - "}
+        {selection.service?.durationMinutes} min {" - "}
         <span className="font-semibold text-indigo-600">
           ${selection.service?.price}
         </span>
       </p>
 
       {/* Date strip */}
-      <div className="no-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {next7Days.map((d) => (
           <Button
             key={d}
@@ -70,7 +70,7 @@ export function SlotStep() {
             variant={date === d ? "solid" : "bordered"}
             color={date === d ? "primary" : "default"}
             className={cn(
-              "flex-none whitespace-nowrap px-4 py-2.5 text-xs font-semibold",
+              "w-full whitespace-nowrap px-2 py-2.5 text-xs font-semibold",
               date !== d && "border-gray-200 bg-gray-50 text-gray-600"
             )}
             onPress={() => selectDate(d)}
