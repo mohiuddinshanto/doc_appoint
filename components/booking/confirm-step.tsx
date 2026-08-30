@@ -163,7 +163,7 @@ export function ConfirmStep() {
           errorMessage={errors.customerPhone}
           onChange={updateField("customerPhone")}
           radius="lg"
-          classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "m-2",label: "pb-1.5" }}
+          classNames={{ inputWrapper: "bg-gray-50", mainWrapper: "mt-4", label: "pb-1.5" }}
         />
 
         <Textarea
