@@ -19,7 +19,9 @@ const config: Config = {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  // HeroUI currently bundles Tailwind 4 types while this project uses Tailwind 3.
+  // The plugin is runtime-compatible; this cast resolves the cross-version type mismatch.
+  plugins: [heroui() as unknown as NonNullable<Config["plugins"]>[number]],
 };
 
 export default config;
