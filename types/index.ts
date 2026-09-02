@@ -216,7 +216,6 @@ export interface ServiceStoreState {
   services: Service[];
   /** Slot lists keyed by `${serviceId}::${date}`. */
   slotsByKey: Record<string, TimeSlot[]>;
-  selectedServiceId: string | null;
   filters: ServiceFilters;
   isLoading: boolean;
   error: string | null;
@@ -225,7 +224,6 @@ export interface ServiceStoreState {
 export interface ServiceStoreActions {
   setServices: (services: Service[]) => void;
   setSlots: (serviceId: string, date: string, slots: TimeSlot[]) => void;
-  setSelectedServiceId: (id: string | null) => void;
   updateFilters: (patch: Partial<ServiceFilters>) => void;
   resetFilters: () => void;
 

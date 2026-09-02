@@ -1,4 +1,6 @@
-//এটার মূল কাজ হলো ডাক্তার/সার্ভিসের data manage করা।
+//এটার মূল কাজ হলো সার্ভিসের data, filter এবং time slot-এর data manage করার Store।
+//ই Store-এ store আছে [services, slotsByKey, filters, isLoading, error]।
+// এবং action আছে [setServices, setSlots, updateFilters, resetFilters, getFilteredServices, getSlotsForServiceAndDate, getAllCategories, setLoading, setError]।
 
 import { create } from "zustand";
 import type {
@@ -22,7 +24,6 @@ const DEFAULT_FILTERS: ServiceFilters = {
 const INITIAL_STATE: ServiceStoreState = {
   services: [],
   slotsByKey: {},
-  selectedServiceId: null,
   filters: DEFAULT_FILTERS,
   isLoading: false,
   error: null,
@@ -33,10 +34,11 @@ export const useServiceStore = create<ServiceStore>()((set, get) => ({
   ...INITIAL_STATE,
 
 
+//`setServices()` যোগ করেছি — **API থেকে পাওয়া ডাক্তার/সার্ভিসের তালিকা Zustand store-এ সংরক্ষণ করার জন্য, যাতে Home ও Services পেজে সেই data দেখানো এবং search/filter করা যায়।
 
   setServices: (services: Service[]) => set({ services }),
 
-  // কোন ডাক্তার/সার্ভিস + কোন তারিখের slots পাওয়া গেছে, সেগুলো store-এ cache করে রাখা।
+  // setSlots() যোগ করেছি — নির্দিষ্ট service/doctor ও date-এর time slots serviceId::date key অনুযায়ী slotsByKey-এ সংরক্ষণ করার জন্য, যাতে পরে সহজে সেই date-এর slots খুঁজে ব্যবহার করা যায়।
   setSlots: (serviceId: string, date: string, slots: TimeSlot[]) =>
     set((s) => ({
       slotsByKey: {
@@ -44,8 +46,6 @@ export const useServiceStore = create<ServiceStore>()((set, get) => ({
         [`${serviceId}::${date}`]: slots,
       },
     })),
-
-  setSelectedServiceId: (id: string | null) => set({ selectedServiceId: id }),
 
   //যখন কোনো filter পরিবর্তন করবে, সেই নতুন filter-এর value Zustand Store-এ update করে রাখা।
   updateFilters: (patch: Partial<ServiceFilters>) =>
@@ -125,6 +125,5 @@ export const useServiceStore = create<ServiceStore>()((set, get) => ({
 
 export const selectServices = (s: ServiceStore): Service[] => s.services;
 export const selectFilters = (s: ServiceStore): ServiceFilters => s.filters;
-export const selectSelectedServiceId = (s: ServiceStore): string | null => s.selectedServiceId;
 export const selectServiceIsLoading = (s: ServiceStore): boolean => s.isLoading;
 export const selectServiceError = (s: ServiceStore): string | null => s.error;
