@@ -1,3 +1,6 @@
+//এইখানে ৩টা State আছে  [user, token, isAuthenticated], আর ২টা function আছে [setAuth(), logout()] এই এই state এবং function গুলা useAuthStore() hook এর মাধ্যমে access করা যাবে।
+
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
