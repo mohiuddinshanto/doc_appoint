@@ -182,6 +182,8 @@ export interface BookingStoreActions {
   cancelAppointment: (appointmentId: string) => Promise<boolean>;
   /** Reload the signed-in user's appointment history from the backend. */
   loadAppointments: () => Promise<void>;
+  /** Reload globally booked slots for one service and date. */
+  loadAvailability: (serviceId: string, date: string) => Promise<void>;
 
   // Computed / derived helpers (called synchronously inside components)
   isSlotBooked: (compositeKey: string) => boolean;

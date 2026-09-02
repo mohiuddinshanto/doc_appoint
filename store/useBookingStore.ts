@@ -1,5 +1,6 @@
-//appointment booking-এর পুরো process manage করার জন্য Zustand Store তৈরি করা হয়েছে। এই Store-এ appointment booking-এর বিভিন্ন step, selection, booked slots, এবং appointment history manage করা হয়। এছাড়া, localStorage-এর মাধ্যমে multi-tab synchronization নিশ্চিত করা হয়।
+//appointment booking-এর পুরো process manage করার জন্য Zustand Store তৈরি করা হয়েছে। এই Store-এ store আছে [appointments, bookedSlotKeys, step, selection, isLoading, error] 
 
+// এবং action আছে [setStep(), selectService(), selectDate(), selectSlot(), clearSelection(), bookSlot(), cancelAppointment(), loadAppointments(), isSlotBooked(), getAppointmentByKey(), getUpcomingAppointments(), getPastAppointments(), getAppointmentsByService(), setError(), setLoading(), reset()]। এই state এবং action গুলা useBookingStore() hook এর মাধ্যমে access করা যাবে।
 
 
 import { create } from "zustand";
@@ -20,7 +21,7 @@ import { getBackendToken } from "../lib/auth-client";
 
 /** localStorage key. Increment `STORE_VERSION` when the shape changes. */
 const STORAGE_KEY = "serviceslot-booking-v2";
-const STORE_VERSION = 2;
+const STORE_VERSION = 3;
 
 
 export function buildSlotKey(
@@ -63,9 +64,12 @@ export const useBookingStore = create<BookingStore>()(
     persist(
       (set, get) => ({
         ...INITIAL_STATE,
-
+        // setStep() দিয়ে user এখন booking-এর কোন অবস্থায় আছে, সেটা পরিবর্তন করার জন্য ডিফাইন করেছি।
+        // যেমন service → slot → confirm → done
         setStep: (step: BookingStep) => set({ step }),
 
+
+        //selectService()-এর কাজ হলো user যে service/doctor নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে slot step-এ নিয়ে যাওয়ার জন্য।
         selectService: (service: Service) =>
           set({
             selection: { ...EMPTY_SELECTION, service, date: TODAY },
@@ -73,6 +77,8 @@ export const useBookingStore = create<BookingStore>()(
             error: null,
           }),
 
+
+        //selectDate()-এর কাজ হলো user যে date নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং নতুন date নির্বাচন করলে আগের selected slot-টি reset করা।
         selectDate: (date: string) =>
           set((s) => ({
             selection: { ...s.selection, date, slot: null },
@@ -80,6 +86,7 @@ export const useBookingStore = create<BookingStore>()(
           })),
 
 
+        //selectSlot()-এর কাজ হলো user যে time slot নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে confirm step-এ নিয়ে যাওয়া।
         selectSlot: (slot: TimeSlot) =>
           set((s) => ({
             selection: { ...s.selection, slot },
@@ -87,7 +94,7 @@ export const useBookingStore = create<BookingStore>()(
             error: null,
           })),
 
-
+        //clearSelection()-এর কাজ হলো বর্তমান booking-এর service, date ও slot-এর selection মুছে দিয়ে booking flow-কে আবার শুরুতে ফিরিয়ে দেওয়া। এটি Confirm করার আগে Cancel করলে বা booking শেষ হওয়ার পর নতুন booking শুরু করতে চাইলে ব্যবহার করা হয়।
         clearSelection: () =>
           set({
             selection: EMPTY_SELECTION,
@@ -96,6 +103,9 @@ export const useBookingStore = create<BookingStore>()(
             isLoading: false,
           }),
 
+
+
+        //bookSlot()-এর কাজ হলো user-এর selected service, date ও time slot ব্যবহার করে appointment তৈরি করা। Booking-এর আগে slot available কিনা চেক করে, booking চলাকালীন slot-টি temporary lock করে, API-তে booking পাঠায় এবং সফল হলে appointment ও booking status update করে। API ব্যর্থ হলে temporary lock সরিয়ে error দেখায়।
 
         bookSlot: async (formValues: BookingFormValues): Promise<Appointment | null> => {
           const { selection, bookedSlotKeys } = get();
@@ -159,7 +169,7 @@ export const useBookingStore = create<BookingStore>()(
           }
         },
 
-
+        //cancelAppointment()-এর কাজ হলো আগে থেকে বুক করা upcoming appointment বাতিল করা। Appointment-এর status cancelled করে, সেই slot-কে আবার available করা এবং API-তে update পাঠানো। যদি API ব্যর্থ হয়, তাহলে আমরা আবার সেই slot-কে booked হিসেবে ফিরিয়ে দেই এবং error দেখাই।
         cancelAppointment: async (appointmentId: string): Promise<boolean> => {
           const appointment = get().appointments.find((a) => a.id === appointmentId);
 
@@ -180,7 +190,7 @@ export const useBookingStore = create<BookingStore>()(
           const { compositeSlotKey } = appointment;
 
           set((s) => {
-            // এর মাধ্যমে আমরা বুকিং বাতিল করার সময় লোকাল স্টোরেজে বুকিং স্লট লক করে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলতে না পারে। 
+            // এর মাধ্যমে আমরা বুকিং বাতিল করার সময় লোকাল স্টোরেজে বুকিং স্লট লক করে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলতে না পারে। তাই প্রথমে সবগুলা কপি করে restKeys তে রাখি এবং তারপর compositeSlotKey কে delete করি। তারপর আমরা appointments-এর মধ্যে সেই appointment-এর status cancelled করে দেই।
             const restKeys = { ...s.bookedSlotKeys };
             delete restKeys[compositeSlotKey];
             return {
@@ -225,15 +235,26 @@ export const useBookingStore = create<BookingStore>()(
 
           try {
             const appointments = await _getAppointmentsApi();
-            const bookedSlotKeys = Object.fromEntries(
-              appointments
-                .filter((appointment) => appointment.status === "upcoming")
-                .map((appointment) => [appointment.compositeSlotKey, appointment.id])
-            );
-
-            set({ appointments, bookedSlotKeys, isLoading: false, error: null });
+            // Personal appointments and shared availability are intentionally
+            // separate: this response contains only the current user's data.
+            set({ appointments, isLoading: false, error: null });
           } catch (err) {
             set({ isLoading: false, error: extractMessage(err) });
+          }
+        },
+
+        loadAvailability: async (serviceId: string, date: string): Promise<void> => {
+          try {
+            const bookedSlotKeys = await _getAvailabilityApi(serviceId, date);
+            set((state) => {
+              // Keep an optimistic lock while its POST request is in flight.
+              const pendingKeys = Object.fromEntries(
+                Object.entries(state.bookedSlotKeys).filter(([, id]) => id === "__pending_booking__")
+              );
+              return { bookedSlotKeys: { ...bookedSlotKeys, ...pendingKeys } };
+            });
+          } catch (err) {
+            set({ error: extractMessage(err) });
           }
         },
 
@@ -259,7 +280,7 @@ export const useBookingStore = create<BookingStore>()(
             ),
 
 
-            
+
         //a is Appointment এইটার মাধ্যমে TypeScript কে বলা হচ্ছে যে এই condition যদি true হয়, তাহলে ধরে নাও a হলো Appointment type-এর object.
 
 
@@ -332,6 +353,13 @@ export const useBookingStore = create<BookingStore>()(
               }
             }
             data = { ...data, bookedSlotKeys };
+          }
+
+          // Before v3 this map contained only the signed-in user's bookings.
+          // Availability is now fetched from the server, so do not show stale
+          // local values until that fetch completes.
+          if (storedVersion < 3) {
+            data = { ...data, bookedSlotKeys: {} };
           }
 
           return {
@@ -429,7 +457,14 @@ async function _createAppointmentApi({
     body: JSON.stringify(appointmentPayload),
   });
   if (!res.ok) {
-    throw new Error("Unable to create the appointment.");
+    let message = "Unable to create the appointment.";
+    try {
+      const data = (await res.json()) as { message?: unknown };
+      if (typeof data.message === "string" && data.message) message = data.message;
+    } catch {
+      // Use the default message for an empty or non-JSON response.
+    }
+    throw new Error(message);
   }
 
   const data = await res.json();
@@ -473,9 +508,38 @@ async function _getAppointmentsApi(): Promise<Appointment[]> {
       ? (data as { data: unknown[] }).data
       : data && typeof data === "object" && Array.isArray((data as { appointments?: unknown }).appointments)
         ? (data as { appointments: unknown[] }).appointments
-      : [];
+        : [];
 
   return records.map((record) => normalizeAppointment(record));
+}
+
+async function _getAvailabilityApi(
+  serviceId: string,
+  date: string
+): Promise<Record<string, string>> {
+  const params = new URLSearchParams({ serviceId, date });
+  const res = await fetch(`${BACKEND_URL}/appoints/availability?${params.toString()}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    let message = "Unable to load slot availability.";
+    try {
+      const data = (await res.json()) as { message?: unknown };
+      if (typeof data.message === "string" && data.message) message = data.message;
+    } catch {
+      // Use the default message for an empty or non-JSON response.
+    }
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as { bookedSlotKeys?: unknown };
+  const keys = Array.isArray(data.bookedSlotKeys) ? data.bookedSlotKeys : [];
+  return Object.fromEntries(
+    keys
+      .filter((key): key is string => typeof key === "string")
+      .map((key) => [key, "__booked__"])
+  );
 }
 
 function normalizeAppointment(record: unknown): Appointment {

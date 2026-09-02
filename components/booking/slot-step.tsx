@@ -20,6 +20,7 @@ export function SlotStep() {
   const selectDate = useBookingStore((s) => s.selectDate);
   const selectSlot = useBookingStore((s) => s.selectSlot);
   const isSlotBooked = useBookingStore((s) => s.isSlotBooked);
+  const loadAvailability = useBookingStore((s) => s.loadAvailability);
 
   const setSlots = useServiceStore((s) => s.setSlots);
   const date = selection.date ?? TODAY;
@@ -37,6 +38,13 @@ export function SlotStep() {
     if (!serviceId || cachedSlots !== undefined) return;
     setSlots(serviceId, date, buildSlots(serviceId, date));
   }, [cachedSlots, date, serviceId, setSlots]);
+
+  // Availability belongs to all users, so refresh it whenever the selected
+  // doctor/service or date changes instead of relying on personal bookings.
+  useEffect(() => {
+    if (!serviceId) return;
+    void loadAvailability(serviceId, date);
+  }, [date, loadAvailability, serviceId]);
 
   const slots: TimeSlot[] = cachedSlots ?? [];
 
