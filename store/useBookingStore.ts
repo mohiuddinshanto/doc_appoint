@@ -165,6 +165,11 @@ export const useBookingStore = create<BookingStore>()(
               return { bookedSlotKeys, isLoading: false, error: extractMessage(err) };
             });
 
+            // A 409 means another user may have taken the slot after this
+            // screen last loaded. Refresh the authoritative availability so
+            // the slot is shown as taken instead of remaining selectable.
+            void get().loadAvailability(service.id, date);
+
             return null;
           }
         },
