@@ -317,11 +317,6 @@ export const useBookingStore = create<BookingStore>()(
             ),
 
         //serviceId মানে হলো serviceId দিয়ে একই ডাক্তার/service-এর সাথে সম্পর্কিত কতগুলো appointment আছে সেটা বের করা
-        getAppointmentsByService: (serviceId: string): Appointment[] =>
-          get().appointments.filter((a) => a.serviceId === serviceId),
-
-
-
         setError: (error: string | null) => set({ error }),
         setLoading: (isLoading: boolean) => set({ isLoading }),
 

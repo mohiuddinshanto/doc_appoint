@@ -189,7 +189,6 @@ export interface BookingStoreActions {
   isSlotBooked: (compositeKey: string) => boolean;
   getUpcomingAppointments: () => Appointment[];
   getPastAppointments: () => Appointment[];
-  getAppointmentsByService: (serviceId: string) => Appointment[];
 
   // Imperative setters used by async actions
   setError: (error: string | null) => void;
