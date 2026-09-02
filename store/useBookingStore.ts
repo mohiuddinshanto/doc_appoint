@@ -105,7 +105,29 @@ export const useBookingStore = create<BookingStore>()(
 
 
 
-        //bookSlot()-এর কাজ হলো user-এর selected service, date ও time slot ব্যবহার করে appointment তৈরি করা। Booking-এর আগে slot available কিনা চেক করে, booking চলাকালীন slot-টি temporary lock করে, API-তে booking পাঠায় এবং সফল হলে appointment ও booking status update করে। API ব্যর্থ হলে temporary lock সরিয়ে error দেখায়।
+        // bookSlot()-এর কাজ হলো user-এর selected service, date ও time slot ব্যবহার করে appointment তৈরি করা।
+        //
+        // ধাপগুলো:
+        // ১. selection-এ service, slot ও date তিনটাই না থাকলে সঙ্গে সঙ্গে error দেখিয়ে থেমে যায়।
+        // ২. buildSlotKey() দিয়ে service + date + slot মিলিয়ে একটি compositeKey বানায়।
+        // ৩. bookedSlotKeys-এ ওই compositeKey ইতিমধ্যে থাকলে (local state অনুযায়ী slot booked/pending),
+        //    booking আটকে দিয়ে "slot আর available নেই" error দেখায়।
+        // ৪. Booking চলাকালীন slot-টি temporary lock করে — bookedSlotKeys-এ compositeKey-এর
+        //    বিপরীতে "__pending_booking__" বসায়, যাতে একই browser-এ দ্বিতীয়বার click বা অন্য
+        //    কোনো slot select করার সময় এই slot booked/disabled দেখায়।
+        // ৫. API-তে (_createAppointmentApi) booking request পাঠায়।
+        // ৬. সফল হলে: নতুন appointment-টি appointments array-তে যোগ করে, bookedSlotKeys-এর
+        //    temporary lock-টি আসল appointment.id দিয়ে replace করে (স্থায়ী booked), এবং
+        //    step-কে "done"-এ নিয়ে যায়।
+        // ৭. API ব্যর্থ হলে: প্রথমে চেক করে bookedSlotKeys-এ এখনো এই temporaryId-টাই আছে কিনা —
+        //    যদি না থাকে (মানে ততক্ষণে অন্য কোনো process/response সেটা বদলে দিয়েছে), তাহলে
+        //    lock স্পর্শ না করেই শুধু error দেখায়। যদি এখনো temporaryId-ই থাকে, তাহলে সেই
+        //    lock মুছে দেয় (delete) এবং error দেখায়।
+        // ৮. এরপর loadAvailability(service.id, date) কল করে server থেকে ওই service+date-এর
+        //    আসল/latest availability আবার fetch করে — কারণ ব্যর্থতার কারণ হতে পারে অন্য কেউ
+        //    ততক্ষণে এই slot-টা বুক করে ফেলেছে (409 conflict)। এটা নিশ্চিত করে যে UI স্থানীয়
+        //    lock মুছে "available" দেখানোর পরিবর্তে, সেই slot প্রকৃতপক্ষে অন্য কারো দ্বারা
+        //    booked থাকলে সেটাই সঠিকভাবে "Taken" দেখাবে।
 
         bookSlot: async (formValues: BookingFormValues): Promise<Appointment | null> => {
           const { selection, bookedSlotKeys } = get();
