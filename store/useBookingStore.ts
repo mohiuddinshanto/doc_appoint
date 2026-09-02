@@ -267,13 +267,6 @@ export const useBookingStore = create<BookingStore>()(
         isSlotBooked: (compositeKey: string): boolean =>
           Boolean(get().bookedSlotKeys[compositeKey]),
 
-        // কোন appointment ওই slot-টা বুক করেছে, সেই appointment-টা বের করা হয় compositeKey এর মাধ্যমে। যদি appointment না থাকে, তাহলে undefined রিটার্ন করা হয়।
-        getAppointmentByKey: (compositeKey: string): Appointment | undefined => {
-          const appointmentId = get().bookedSlotKeys[compositeKey];
-          if (!appointmentId) return undefined;
-          return get().appointments.find((a) => a.id === appointmentId);
-        },
-
         // slot-এর স্ট্যাটাস অনুযায়ী appointment-গুলোকে filter করা হয় এবং তারপরে তারিখ এবং সময় অনুযায়ী sort করা হয়।
         getUpcomingAppointments: (): Appointment[] =>
           get()

@@ -187,7 +187,6 @@ export interface BookingStoreActions {
 
   // Computed / derived helpers (called synchronously inside components)
   isSlotBooked: (compositeKey: string) => boolean;
-  getAppointmentByKey: (compositeKey: string) => Appointment | undefined;
   getUpcomingAppointments: () => Appointment[];
   getPastAppointments: () => Appointment[];
   getAppointmentsByService: (serviceId: string) => Appointment[];
