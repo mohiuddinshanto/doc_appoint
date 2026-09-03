@@ -19,7 +19,10 @@ export function SlotStep() {
   const selection = useBookingStore(selectSelection);
   const selectDate = useBookingStore((s) => s.selectDate);
   const selectSlot = useBookingStore((s) => s.selectSlot);
-  const isSlotBooked = useBookingStore((s) => s.isSlotBooked);
+  // Subscribe to the actual availability map. Calling `isSlotBooked()` alone
+  // reads the latest store value, but does not make this component re-render
+  // when another user's booking is fetched from the server.
+  const bookedSlotKeys = useBookingStore((s) => s.bookedSlotKeys);
   const loadAvailability = useBookingStore((s) => s.loadAvailability);
 
   const setSlots = useServiceStore((s) => s.setSlots);
@@ -107,7 +110,7 @@ export function SlotStep() {
             const key = selection.service
               ? buildSlotKey(selection.service.id, date, slot.id)
               : "";
-            const booked = isSlotBooked(key);
+            const booked = Boolean(bookedSlotKeys[key]);
             const isSelected =
               selection.slot?.id === slot.id && selection.date === date;
 
