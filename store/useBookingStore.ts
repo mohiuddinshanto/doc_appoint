@@ -4,7 +4,6 @@
 
 
 import { create } from "zustand";
-import { persist, subscribeWithSelector } from "zustand/middleware";
 import { TODAY } from "../lib/data";
 import type {
   Appointment,
@@ -17,11 +16,6 @@ import type {
   TimeSlot,
 } from "../types";
 import { getBackendToken } from "../lib/auth-client";
-
-
-/** localStorage key. Increment `STORE_VERSION` when the shape changes. */
-const STORAGE_KEY = "serviceslot-booking-v2";
-const STORE_VERSION = 3;
 
 
 export function buildSlotKey(
@@ -58,11 +52,7 @@ const INITIAL_STATE = {
 
 
 
-export const useBookingStore = create<BookingStore>()(
-
-  subscribeWithSelector(
-    persist(
-      (set, get) => ({
+export const useBookingStore = create<BookingStore>()((set, get) => ({
         ...INITIAL_STATE,
         // setStep() দিয়ে user এখন booking-এর কোন অবস্থায় আছে, সেটা পরিবর্তন করার জন্য ডিফাইন করেছি।
         // যেমন service → slot → confirm → done
@@ -187,9 +177,7 @@ export const useBookingStore = create<BookingStore>()(
               return { bookedSlotKeys, isLoading: false, error: extractMessage(err) };
             });
 
-            // A 409 means another user may have taken the slot after this
-            // screen last loaded. Refresh the authoritative availability so
-            // the slot is shown as taken instead of remaining selectable.
+           //booking ব্যর্থ হওয়ার পর backend থেকে ওই date-এর সর্বশেষ slot availability আবার এনে UI-কে সঠিক অবস্থায় নেওয়া।
             void get().loadAvailability(service.id, date);
 
             return null;
@@ -257,25 +245,30 @@ export const useBookingStore = create<BookingStore>()(
           }
         },
 
+
+        //loadAppointments() ব্যবহার করা হয়েছে backend থেকে বর্তমান user-এর সব appointment এনে Zustand-এর appointments state-এ রাখার জন্য, যাতে My Appointments পেজে সেগুলো দেখানো যায়।
         loadAppointments: async (): Promise<void> => {
           set({ isLoading: true, error: null });
 
           try {
             const appointments = await _getAppointmentsApi();
-            // Personal appointments and shared availability are intentionally
-            // separate: this response contains only the current user's data.
+            // এই response-এ শুধুমাত্র বর্তমান user-এর appointments-এর data থাকে।
             set({ appointments, isLoading: false, error: null });
           } catch (err) {
             set({ isLoading: false, error: extractMessage(err) });
           }
         },
 
+
+        //Backend থেকে নির্দিষ্ট service ও date-এর booked slot নিয়ে আসে এবং সেই data-এর সাথে frontend-এ চলমান __pending_booking__ slot-গুলোও রেখে bookedSlotKeys update করে।
         loadAvailability: async (serviceId: string, date: string): Promise<void> => {
           try {
             const bookedSlotKeys = await _getAvailabilityApi(serviceId, date);
             set((state) => {
               // Keep an optimistic lock while its POST request is in flight.
               const pendingKeys = Object.fromEntries(
+                // প্রথম value (key) দরকার নেই
+                // দ্বিতীয় value-টা id নামে নেওয়া হচ্ছে
                 Object.entries(state.bookedSlotKeys).filter(([, id]) => id === "__pending_booking__")
               );
               return { bookedSlotKeys: { ...bookedSlotKeys, ...pendingKeys } };
@@ -289,16 +282,7 @@ export const useBookingStore = create<BookingStore>()(
         isSlotBooked: (compositeKey: string): boolean =>
           Boolean(get().bookedSlotKeys[compositeKey]),
 
-        // slot-এর স্ট্যাটাস অনুযায়ী appointment-গুলোকে filter করা হয় এবং তারপরে তারিখ এবং সময় অনুযায়ী sort করা হয়।
 
-
-
-        //a is Appointment এইটার মাধ্যমে TypeScript কে বলা হচ্ছে যে এই condition যদি true হয়, তাহলে ধরে নাও a হলো Appointment type-এর object.
-
-
-        // getPastAppointments ফাংশনটি appointment-গুলোকে filter করে যেগুলো "completed" বা "cancelled" স্ট্যাটাসে আছে এবং তারপর তাদের bookedAt তারিখ অনুযায়ী descending order-এ sort করে।
-
-        //serviceId মানে হলো serviceId দিয়ে একই ডাক্তার/service-এর সাথে সম্পর্কিত কতগুলো appointment আছে সেটা বের করা
         reset: () =>
           set({
             ...INITIAL_STATE,
@@ -306,66 +290,7 @@ export const useBookingStore = create<BookingStore>()(
             appointments: [],
             bookedSlotKeys: {},
           }),
-      }),
-
-
-      {
-        name: STORAGE_KEY,
-
-        partialize: (state) => ({
-          appointments: state.appointments,
-          bookedSlotKeys: state.bookedSlotKeys,
-        }),
-
-
-        version: STORE_VERSION,
-
-
-        migrate: (persisted: unknown, storedVersion: number): Partial<BookingStore> => {
-          let data = persisted as {
-            appointments?: Appointment[];
-            bookedSlotKeys?: Record<string, string>;
-          };
-
-
-
-
-          // LocalStorage-এর data যদি Version 2-এর আগের হয়, তাহলে migration করা হয়। Version 2-এ আমরা compositeSlotKey field যোগ করেছি। তাই আমরা appointments-এর মধ্যে compositeSlotKey generate করি এবং bookedSlotKeys map update করি।
-          if (storedVersion < 2) {
-            const bookedSlotKeys: Record<string, string> = {};
-            for (const appt of data.appointments ?? []) {
-              if (appt.status === "upcoming") {
-
-                const key =
-                  appt.compositeSlotKey ??
-                  buildSlotKey(appt.serviceId, appt.date, appt.slotId);
-                bookedSlotKeys[key] = appt.id;
-
-                if (!appt.compositeSlotKey) {
-                  appt.compositeSlotKey = key;
-                }
-              }
-            }
-            data = { ...data, bookedSlotKeys };
-          }
-
-          // Before v3 this map contained only the signed-in user's bookings.
-          // Availability is now fetched from the server, so do not show stale
-          // local values until that fetch completes.
-          if (storedVersion < 3) {
-            data = { ...data, bookedSlotKeys: {} };
-          }
-
-          return {
-            appointments: data.appointments ?? [],
-            bookedSlotKeys: data.bookedSlotKeys ?? {},
-          };
-        },
-
-      }
-    )
-  )
-);
+      }));
 
 
 // Zustand store থেকে নির্দিষ্ট নির্দিষ্ট data বের করার ছোট function লিখা হয়। এগুলোকে selector বলা হয়। এগুলো ব্যবহার করে component-গুলোকে শুধু প্রয়োজনীয় data access করতে সাহায্য করে এবং unnecessary re-renders কমায়।
@@ -378,28 +303,6 @@ export const selectError = (s: BookingStore): string | null => s.error;
 
 export const selectUpcomingCount = (s: BookingStore): number =>
   s.appointments.filter((a) => a.status === "upcoming").length;
-
-// এইখানে আমরা window.addEventListener ব্যবহার করে localStorage-এর পরিবর্তনগুলোর জন্য listener যোগ করি। যখন অন্য tab বা window-এ localStorage update হয়, তখন এই listener trigger হয় এবং আমাদের Zustand store update হয়। এটি multi-tab synchronization নিশ্চিত করে।
-
-if (typeof window !== "undefined") {
-  window.addEventListener("storage", (event: StorageEvent) => {
-    if (event.key !== STORAGE_KEY || event.newValue === null) return;
-    try {
-      const { state } = JSON.parse(event.newValue) as {
-        state: { appointments: Appointment[]; bookedSlotKeys: Record<string, string> };
-      };
-
-      useBookingStore.setState((current) => ({
-        appointments: state.appointments ?? current.appointments,
-        bookedSlotKeys: state.bookedSlotKeys ?? current.bookedSlotKeys,
-      }));
-    } catch {
-
-    }
-  });
-}
-
-
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 

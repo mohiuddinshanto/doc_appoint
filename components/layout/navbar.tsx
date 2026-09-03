@@ -55,7 +55,6 @@ export function AppNavbar() {
     // Keep the previous user's appointments out of the UI. Their history is
     // loaded again from the backend after the next successful sign-in.
     useBookingStore.getState().reset();
-    useBookingStore.persist.clearStorage();
     toast.success("Signed out successfully.");
   };
 
