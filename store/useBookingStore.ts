@@ -290,14 +290,6 @@ export const useBookingStore = create<BookingStore>()(
           Boolean(get().bookedSlotKeys[compositeKey]),
 
         // slot-এর স্ট্যাটাস অনুযায়ী appointment-গুলোকে filter করা হয় এবং তারপরে তারিখ এবং সময় অনুযায়ী sort করা হয়।
-        getUpcomingAppointments: (): Appointment[] =>
-          get()
-            .appointments.filter((a) => a.status === "upcoming")
-            .sort(
-              (a, b) =>
-                new Date(`${a.date}T${a.startTime}`).getTime() -
-                new Date(`${b.date}T${b.startTime}`).getTime()
-            ),
 
 
 
@@ -305,21 +297,8 @@ export const useBookingStore = create<BookingStore>()(
 
 
         // getPastAppointments ফাংশনটি appointment-গুলোকে filter করে যেগুলো "completed" বা "cancelled" স্ট্যাটাসে আছে এবং তারপর তাদের bookedAt তারিখ অনুযায়ী descending order-এ sort করে।
-        getPastAppointments: (): Appointment[] =>
-          get()
-            .appointments.filter(
-              (a): a is Appointment =>
-                a.status === "completed" || a.status === "cancelled"
-            )
-            .sort(
-              (a, b) =>
-                new Date(b.bookedAt).getTime() - new Date(a.bookedAt).getTime()
-            ),
 
         //serviceId মানে হলো serviceId দিয়ে একই ডাক্তার/service-এর সাথে সম্পর্কিত কতগুলো appointment আছে সেটা বের করা
-        setError: (error: string | null) => set({ error }),
-        setLoading: (isLoading: boolean) => set({ isLoading }),
-
         reset: () =>
           set({
             ...INITIAL_STATE,
@@ -393,12 +372,7 @@ export const useBookingStore = create<BookingStore>()(
 
 export const selectStep = (s: BookingStore): BookingStep => s.step;
 export const selectSelection = (s: BookingStore): BookingSelection => s.selection;
-export const selectService = (s: BookingStore): Service | null => s.selection.service;
-export const selectDate = (s: BookingStore): string | null => s.selection.date;
-export const selectSelectedSlot = (s: BookingStore): TimeSlot | null => s.selection.slot;
 export const selectAppointments = (s: BookingStore): Appointment[] => s.appointments;
-export const selectBookedSlotKeys = (s: BookingStore): Record<string, string> => s.bookedSlotKeys;
-export const selectIsLoading = (s: BookingStore): boolean => s.isLoading;
 export const selectError = (s: BookingStore): string | null => s.error;
 
 

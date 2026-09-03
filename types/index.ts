@@ -25,9 +25,6 @@ export type AppointmentStatus = "upcoming" | "completed" | "cancelled";
 /** Steps in the booking wizard flow. */
 export type BookingStep = "service" | "slot" | "confirm" | "done";
 
-/** Sort direction used by list selectors. */
-export type SortDirection = "asc" | "desc";
-
 // ─── 2. Core Domain Entities ─────────────────────────────────────────────────
 
 export interface Service {
@@ -187,12 +184,6 @@ export interface BookingStoreActions {
 
   // Computed / derived helpers (called synchronously inside components)
   isSlotBooked: (compositeKey: string) => boolean;
-  getUpcomingAppointments: () => Appointment[];
-  getPastAppointments: () => Appointment[];
-
-  // Imperative setters used by async actions
-  setError: (error: string | null) => void;
-  setLoading: (loading: boolean) => void;
 
   /** Wipe all persisted data — useful for "logout" or testing. */
   reset: () => void;
@@ -202,38 +193,13 @@ export type BookingStore = BookingStoreState & BookingStoreActions;
 
 // ─── 6. Service Store Types ───────────────────────────────────────────────────
 
-export interface ServiceFilters {
-  query: string;
-  category: string | null;
-  maxPrice: number | null;
-  minRating: number | null;
-  sortBy: "name" | "price" | "rating" | "duration";
-  sortDirection: SortDirection;
-}
-
 export interface ServiceStoreState {
-  /** Full list fetched from API / mock. */
-  services: Service[];
   /** Slot lists keyed by `${serviceId}::${date}`. */
   slotsByKey: Record<string, TimeSlot[]>;
-  filters: ServiceFilters;
-  isLoading: boolean;
-  error: string | null;
 }
 
 export interface ServiceStoreActions {
-  setServices: (services: Service[]) => void;
   setSlots: (serviceId: string, date: string, slots: TimeSlot[]) => void;
-  updateFilters: (patch: Partial<ServiceFilters>) => void;
-  resetFilters: () => void;
-
-  // Derived queries
-  getFilteredServices: () => Service[];
-  getSlotsForServiceAndDate: (serviceId: string, date: string) => TimeSlot[];
-  getAllCategories: () => string[];
-
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
 }
 
 export type ServiceStore = ServiceStoreState & ServiceStoreActions;

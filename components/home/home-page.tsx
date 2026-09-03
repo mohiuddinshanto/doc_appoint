@@ -11,7 +11,6 @@ import { HowItWorks } from "./how-it-works";
 import { HomeFooter } from "./home-footer";
 import { getDoctors } from "@/lib/api/doctors";
 import { useBookingStore } from "@/store/useBookingStore";
-import { useServiceStore } from "@/store/useServiceStore";
 import type { Service } from "@/types";
 import Testimonials from "./testimonials";
 import WhyChooseUs from "./whychooseus";
@@ -21,7 +20,6 @@ import Band from "./band";
 export function HomePage() {
   const router = useRouter();
   const selectService = useBookingStore((state) => state.selectService);
-  const setServices = useServiceStore((state) => state.setServices);
   const [search, setSearch] = useState("");
   const [doctors, setDoctors] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,13 +30,11 @@ export function HomePage() {
       .then((data) => {
         if (!active) return;
         setDoctors(data);
-        setServices(data);
       })
       .catch((error: unknown) => {
         console.error("Failed to load doctors from backend:", error);
         if (!active) return;
         setDoctors([]);
-        setServices([]);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -47,7 +43,7 @@ export function HomePage() {
     return () => {
       active = false;
     };
-  }, [setServices]);
+  }, []);
 
   function handleSearch() {
     const query = search.trim();

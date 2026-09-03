@@ -10,7 +10,6 @@ import { SpecialtyFilters } from "@/components/home/specialty-filters";
 import { DoctorGrid } from "@/components/home/doctor-grid";
 import { getDoctors } from "@/lib/api/doctors";
 import { useBookingStore } from "@/store/useBookingStore";
-import { useServiceStore } from "@/store/useServiceStore";
 import type { Service } from "@/types";
 
 /** Complete searchable catalogue, separate from the short home-page preview. */
@@ -19,7 +18,6 @@ export function ServicesPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectService = useBookingStore((state) => state.selectService);
-  const setServices = useServiceStore((state) => state.setServices);
   const query = searchParams.get("search") ?? "";
   const specialty = searchParams.get("specialty") ?? "All Specialties";
   const [doctors, setDoctors] = useState<Service[]>([]);
@@ -31,13 +29,11 @@ export function ServicesPage() {
       .then((data) => {
         if (!active) return;
         setDoctors(data);
-        setServices(data);
       })
       .catch((error: unknown) => {
         console.error("Failed to load doctors from backend:", error);
         if (!active) return;
         setDoctors([]);
-        setServices([]);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -46,7 +42,7 @@ export function ServicesPage() {
     return () => {
       active = false;
     };
-  }, [query, setServices, specialty]);
+  }, [query, specialty]);
 
   function updateParams(patch: { search?: string; specialty?: string }) {
     const params = new URLSearchParams(searchParams.toString());
