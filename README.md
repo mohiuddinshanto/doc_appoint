@@ -4,6 +4,10 @@ A responsive appointment-booking application for finding a doctor or service, ch
 
 Built as a frontend internship project with **Next.js**, **TypeScript**, and **Tailwind CSS**.
 
+## Live Demo
+
+[https://doc-appoint-omega.vercel.app/](https://doc-appoint-omega.vercel.app/)
+
 ![ServiceSlot appointment booking dashboard](public/Images/doc-appoint.jpg)
 
 ## Features
@@ -14,7 +18,7 @@ Built as a frontend internship project with **Next.js**, **TypeScript**, and **T
 - Validate customer name, email address, and phone number before confirming a booking.
 - Prevent a booked slot from being selected again; cancelling an upcoming appointment releases that slot.
 - View upcoming and cancelled appointments from **My Appointments**.
-- Persist booking state in `localStorage` and keep it synchronized across browser tabs.
+- Load current appointment and availability data from the backend.
 - Register and sign in with email and password.
 - Responsive interface for mobile and desktop screens.
 
@@ -24,7 +28,7 @@ Built as a frontend internship project with **Next.js**, **TypeScript**, and **T
 - [React 19](https://react.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Zustand](https://zustand.docs.pmnd.rs/) for client-side state and persistence
+- [Zustand](https://zustand.docs.pmnd.rs/) for client-side state
 - [HeroUI](https://www.heroui.com/) for UI components
 - Better Auth and MongoDB for authentication and appointment data
 
