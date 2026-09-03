@@ -14,7 +14,11 @@ export const authClient = createAuthClient({
 });
 
 export const { useSession, signIn, signOut, signUp } = authClient;
-/** Gets a short-lived JWT signed by Better Auth for the separate Express API. */
+/**
+ * Gets a short-lived JWT signed by Better Auth for the separate Express API.
+ * Do not persist this token in localStorage/Zustand; fetch it immediately
+ * before a protected API request instead.
+ */
 export async function getBackendToken(): Promise<string> {
   const response = await fetch("/api/auth/token", { credentials: "include" });
   if (!response.ok) throw new Error("Your session has expired. Please sign in again.");

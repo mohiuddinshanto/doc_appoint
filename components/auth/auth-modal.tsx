@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { LuMail, LuLock, LuUser, LuLogIn, LuUserPlus } from "react-icons/lu";
 import toast from "react-hot-toast";
-import { authClient, getBackendToken } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { useAuthStore } from "@/store/useAuthStore";
 
 interface AuthModalProps {
@@ -59,8 +59,6 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
       if (res.error) {
         toast.error(res.error.message || "Failed to sign in. Check credentials.");
       } else {
-        const token = await getBackendToken();
-
         const userId = res.data?.user?.id;
         if (!userId) {
           throw new Error("Sign-in succeeded but the server did not return a user ID.");
@@ -72,7 +70,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
           email: res.data?.user?.email || email,
         };
 
-        setAuth(loggedInUser, token);
+        setAuth(loggedInUser);
         toast.success(`Welcome back, ${loggedInUser.name}!`);
         onOpenChange(false);
         resetForm();
@@ -107,8 +105,6 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
       if (res.error) {
         toast.error(res.error.message || "Registration failed.");
       } else {
-        const token = await getBackendToken();
-
         const userId = res.data?.user?.id;
         if (!userId) {
           throw new Error("Registration succeeded but the server did not return a user ID.");
@@ -120,7 +116,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
           email: email,
         };
 
-        setAuth(newUser, token);
+        setAuth(newUser);
         toast.success(`Account created! Welcome, ${name}!`);
         onOpenChange(false);
         resetForm();
@@ -275,4 +271,3 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
     </Modal>
   );
 }
-
