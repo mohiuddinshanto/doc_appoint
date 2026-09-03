@@ -40,8 +40,6 @@ const db = client.db(process.env.MONGODB_DB_NAME || "docappoint_db");
 export const auth = betterAuth({
   baseURL: getAppBaseUrl(),
   secret: process.env.BETTER_AUTH_SECRET,
-  // Avoid multi-document transactions during sign-up. Atlas can transiently
-  // abort those while its collection catalog is changing.
   database: mongodbAdapter(db),
   plugins: [jwt()],
   emailAndPassword: {

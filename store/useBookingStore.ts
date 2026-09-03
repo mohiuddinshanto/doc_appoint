@@ -1,6 +1,8 @@
-//appointment booking-এর পুরো process manage করার জন্য Zustand Store তৈরি করা হয়েছে। এই Store-এ store আছে [appointments, bookedSlotKeys, step, selection, isLoading, error] 
+//appointment booking-এর পুরো process manage করার জন্য Zustand Store তৈরি করা হয়েছে। এই Store-এ store আছে  [appointments, bookedSlotKeys, step, selection, isLoading, error]
 
-// এবং action আছে [setStep(), selectService(), selectDate(), selectSlot(), clearSelection(), bookSlot(), cancelAppointment(), loadAppointments(), isSlotBooked(), getAppointmentByKey(), getUpcomingAppointments(), getPastAppointments(), getAppointmentsByService(), setError(), setLoading(), reset()]। এই state এবং action গুলা useBookingStore() hook এর মাধ্যমে access করা যাবে।
+// এবং action আছে [setStep(), selectService(), selectDate(), selectSlot(), clearSelection(),
+//  bookSlot(), cancelAppointment(), loadAppointments(), loadAvailability(),
+//  isSlotBooked(), reset()]। এই state এবং action গুলা useBookingStore() hook এর মাধ্যমে access করা যাবে।
 
 
 import { create } from "zustand";
@@ -53,244 +55,223 @@ const INITIAL_STATE = {
 
 
 export const useBookingStore = create<BookingStore>()((set, get) => ({
-        ...INITIAL_STATE,
-        // setStep() দিয়ে user এখন booking-এর কোন অবস্থায় আছে, সেটা পরিবর্তন করার জন্য ডিফাইন করেছি।
-        // যেমন service → slot → confirm → done
-        setStep: (step: BookingStep) => set({ step }),
+  ...INITIAL_STATE,
+  // setStep() দিয়ে user এখন booking-এর কোন অবস্থায় আছে, সেটা পরিবর্তন করার জন্য ডিফাইন করেছি।
+  // যেমন service → slot → confirm → done
+  setStep: (step: BookingStep) => set({ step }),
 
 
-        //selectService()-এর কাজ হলো user যে service/doctor নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে slot step-এ নিয়ে যাওয়ার জন্য।
-        selectService: (service: Service) =>
-          set({
-            selection: { ...EMPTY_SELECTION, service, date: TODAY },
-            step: "slot",
-            error: null,
-          }),
+  //selectService()-এর কাজ হলো user যে service/doctor নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে slot step-এ নিয়ে যাওয়ার জন্য।
+  selectService: (service: Service) =>
+    set({
+      selection: { ...EMPTY_SELECTION, service, date: TODAY },
+      step: "slot",
+      error: null,
+    }),
 
 
-        //selectDate()-এর কাজ হলো user যে date নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং নতুন date নির্বাচন করলে আগের selected slot-টি reset করা।
-        selectDate: (date: string) =>
-          set((s) => ({
-            selection: { ...s.selection, date, slot: null },
-            error: null,
-          })),
+  //selectDate()-এর কাজ হলো user যে date নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং নতুন date নির্বাচন করলে আগের selected slot-টি reset করা।
+  selectDate: (date: string) =>
+    set((s) => ({
+      selection: { ...s.selection, date, slot: null },
+      error: null,
+    })),
 
 
-        //selectSlot()-এর কাজ হলো user যে time slot নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে confirm step-এ নিয়ে যাওয়া।
-        selectSlot: (slot: TimeSlot) =>
-          set((s) => ({
-            selection: { ...s.selection, slot },
-            step: "confirm",
-            error: null,
-          })),
+  //selectSlot()-এর কাজ হলো user যে time slot নির্বাচন করেছে, সেটা selection-এর মধ্যে রাখা এবং booking flow-কে confirm step-এ নিয়ে যাওয়া।
+  selectSlot: (slot: TimeSlot) =>
+    set((s) => ({
+      selection: { ...s.selection, slot },
+      step: "confirm",
+      error: null,
+    })),
 
-        //clearSelection()-এর কাজ হলো বর্তমান booking-এর service, date ও slot-এর selection মুছে দিয়ে booking flow-কে আবার শুরুতে ফিরিয়ে দেওয়া। এটি Confirm করার আগে Cancel করলে বা booking শেষ হওয়ার পর নতুন booking শুরু করতে চাইলে ব্যবহার করা হয়।
-        clearSelection: () =>
-          set({
-            selection: EMPTY_SELECTION,
-            step: "service",
-            error: null,
-            isLoading: false,
-          }),
-
-
-
-        // bookSlot()-এর কাজ হলো user-এর selected service, date ও time slot ব্যবহার করে appointment তৈরি করা।
-        //
-        // ধাপগুলো:
-        // ১. selection-এ service, slot ও date তিনটাই না থাকলে সঙ্গে সঙ্গে error দেখিয়ে থেমে যায়।
-        // ২. buildSlotKey() দিয়ে service + date + slot মিলিয়ে একটি compositeKey বানায়।
-        // ৩. bookedSlotKeys-এ ওই compositeKey ইতিমধ্যে থাকলে (local state অনুযায়ী slot booked/pending),
-        //    booking আটকে দিয়ে "slot আর available নেই" error দেখায়।
-        // ৪. Booking চলাকালীন slot-টি temporary lock করে — bookedSlotKeys-এ compositeKey-এর
-        //    বিপরীতে "__pending_booking__" বসায়, যাতে একই browser-এ দ্বিতীয়বার click বা অন্য
-        //    কোনো slot select করার সময় এই slot booked/disabled দেখায়।
-        // ৫. API-তে (_createAppointmentApi) booking request পাঠায়।
-        // ৬. সফল হলে: নতুন appointment-টি appointments array-তে যোগ করে, bookedSlotKeys-এর
-        //    temporary lock-টি আসল appointment.id দিয়ে replace করে (স্থায়ী booked), এবং
-        //    step-কে "done"-এ নিয়ে যায়।
-        // ৭. API ব্যর্থ হলে: প্রথমে চেক করে bookedSlotKeys-এ এখনো এই temporaryId-টাই আছে কিনা —
-        //    যদি না থাকে (মানে ততক্ষণে অন্য কোনো process/response সেটা বদলে দিয়েছে), তাহলে
-        //    lock স্পর্শ না করেই শুধু error দেখায়। যদি এখনো temporaryId-ই থাকে, তাহলে সেই
-        //    lock মুছে দেয় (delete) এবং error দেখায়।
-        // ৮. এরপর loadAvailability(service.id, date) কল করে server থেকে ওই service+date-এর
-        //    আসল/latest availability আবার fetch করে — কারণ ব্যর্থতার কারণ হতে পারে অন্য কেউ
-        //    ততক্ষণে এই slot-টা বুক করে ফেলেছে (409 conflict)। এটা নিশ্চিত করে যে UI স্থানীয়
-        //    lock মুছে "available" দেখানোর পরিবর্তে, সেই slot প্রকৃতপক্ষে অন্য কারো দ্বারা
-        //    booked থাকলে সেটাই সঠিকভাবে "Taken" দেখাবে।
-
-        bookSlot: async (formValues: BookingFormValues): Promise<Appointment | null> => {
-          const { selection, bookedSlotKeys } = get();
-          const { service, slot, date } = selection;
+  //clearSelection()-এর কাজ হলো বর্তমান booking-এর service, date ও slot-এর selection মুছে দিয়ে booking flow-কে আবার শুরুতে ফিরিয়ে দেওয়া। এটি Confirm করার আগে Cancel করলে বা booking শেষ হওয়ার পর নতুন booking শুরু করতে চাইলে ব্যবহার করা হয়।
+  clearSelection: () =>
+    set({
+      selection: EMPTY_SELECTION,
+      step: "service",
+      error: null,
+      isLoading: false,
+    }),
 
 
-          if (!service || !slot || !date) {
-            set({ error: "Please select a service, date, and time slot before booking." });
-            return null;
-          }
+
+  // bookSlot()-এর কাজ হলো user-এর selected service, date ও time slot ব্যবহার করে appointment তৈরি করা।
+  // সাথে সাথে check করা হয় যে service, date ও slot selection আছে কিনা। যদি না থাকে, তাহলে error দেখানো হয়। তারপর bookedSlotKeys-এর মধ্যে compositeKey check করা হয়। যদি ইতিমধ্যেই booked থাকে, তাহলে error দেখানো হয়। তারপর temporaryId দিয়ে bookedSlotKeys update করা হয় যাতে অন্য user একই সময়ে এই slot বুক করতে না পারে। তারপর _createAppointmentApi() function call করে appointment তৈরি করা হয়। যদি appointment সফলভাবে তৈরি হয়, তাহলে appointments state update করা হয় এবং bookedSlotKeys-এর মধ্যে compositeKey-এর সাথে appointment ID রাখা হয়। যদি appointment creation ব্যর্থ হয়, তাহলে bookedSlotKeys থেকে temporaryId remove করা হয় এবং error দেখানো হয়। এছাড়া loadAvailability() function call করে backend থেকে সর্বশেষ slot availability নিয়ে আসে।
+
+  bookSlot: async (formValues: BookingFormValues): Promise<Appointment | null> => {
+    const { selection, bookedSlotKeys } = get();
+    const { service, slot, date } = selection;
 
 
-          // যদি সার্ভিস এবং স্লোট ইতিমধ্যেই বুক করা থাকে, তাহলে এরর মেসেজ দেখানো হবে
-          const compositeKey = buildSlotKey(service.id, date, slot.id);
-
-          if (bookedSlotKeys[compositeKey]) {
-            set({
-              error:
-                "This slot is no longer available. It may have just been booked by someone else. please choose another time.",
-            });
-            return null;
-          }
+    if (!service || !slot || !date) {
+      set({ error: "Please select a service, date, and time slot before booking." });
+      return null;
+    }
 
 
-          // এই temporaryId শুধু আমাদের frontend-এর জন্য একটি সাময়িক lock। যেন অন্য user একই সময়ে এই slot বুক করতে না পারে। আসল appointment ID MongoDB তৈরি করবে এবং API response-এর মাধ্যমে দেবে।
-          const temporaryId = "__pending_booking__";
-          set((s) => ({
-            bookedSlotKeys: { ...s.bookedSlotKeys, [compositeKey]: temporaryId },
-            isLoading: true,
-            error: null,
-          }));
+    // যদি সার্ভিস এবং স্লোট ইতিমধ্যেই বুক করা থাকে, তাহলে এরর মেসেজ দেখানো হবে
+    const compositeKey = buildSlotKey(service.id, date, slot.id);
 
-          try {
-            const appointment = await _createAppointmentApi({ service, slot, date, compositeKey, formValues });
-
-            set((s) => {
-              return {
-                appointments: [...s.appointments, appointment],
-                bookedSlotKeys: { ...s.bookedSlotKeys, [compositeKey]: appointment.id },
-                step: "done",
-                isLoading: false,
-                error: null,
-              };
-            });
-
-            return appointment;
-          } catch (err) {
-
-            // যদি বুকিং ব্যর্থ হয়, এবং অন্য কেও বুকিং করে ফেলে সেই সময় অতঃপর আমরা দেখি যে আমাদের অস্থায়ী লক এখনও আছে কিনা। যদি না থাকে, তাহলে আমরা শুধু এরর দেখাই। 
-            set((s) => {
-              if (s.bookedSlotKeys[compositeKey] !== temporaryId) {
-                return { isLoading: false, error: extractMessage(err) };
-              }
-              // যদি আমাদের অস্থায়ী লক এখনও আছে, তাহলে আমরা এটিকে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলে সেই সময় আর উক্ত উজারকে আমরা  এরর দেখাই।
-              const bookedSlotKeys = { ...s.bookedSlotKeys };
-              delete bookedSlotKeys[compositeKey];
-              return { bookedSlotKeys, isLoading: false, error: extractMessage(err) };
-            });
-
-           //booking ব্যর্থ হওয়ার পর backend থেকে ওই date-এর সর্বশেষ slot availability আবার এনে UI-কে সঠিক অবস্থায় নেওয়া।
-            void get().loadAvailability(service.id, date);
-
-            return null;
-          }
-        },
-
-        //cancelAppointment()-এর কাজ হলো আগে থেকে বুক করা upcoming appointment বাতিল করা। Appointment-এর status cancelled করে, সেই slot-কে আবার available করা এবং API-তে update পাঠানো। যদি API ব্যর্থ হয়, তাহলে আমরা আবার সেই slot-কে booked হিসেবে ফিরিয়ে দেই এবং error দেখাই।
-        cancelAppointment: async (appointmentId: string): Promise<boolean> => {
-          const appointment = get().appointments.find((a) => a.id === appointmentId);
+    if (bookedSlotKeys[compositeKey]) {
+      set({
+        error:
+          "This slot is no longer available. It may have just been booked by someone else. please choose another time.",
+      });
+      return null;
+    }
 
 
-          if (!appointment) {
-            set({ error: `Appointment "${appointmentId}" was not found.` });
-            return false;
-          }
+    // এই temporaryId শুধু আমাদের frontend-এর জন্য একটি সাময়িক lock। যেন অন্য user একই সময়ে এই slot বুক করতে না পারে। আসল appointment ID MongoDB তৈরি করবে এবং API response-এর মাধ্যমে দেবে।
+    const temporaryId = "__pending_booking__";
+    set((s) => ({
+      bookedSlotKeys: { ...s.bookedSlotKeys, [compositeKey]: temporaryId },
+      isLoading: true,
+      error: null,
+    }));
+
+    try {
+      const appointment = await _createAppointmentApi({ service, slot, date, compositeKey, formValues });
+
+      set((s) => {
+        return {
+          appointments: [...s.appointments, appointment],
+          bookedSlotKeys: { ...s.bookedSlotKeys, [compositeKey]: appointment.id },
+          step: "done",
+          isLoading: false,
+          error: null,
+        };
+      });
+
+      return appointment;
+    } catch (err) {
+
+      // যদি বুকিং ব্যর্থ হয়, এবং অন্য কেও বুকিং করে ফেলে সেই সময় অতঃপর আমরা দেখি যে আমাদের অস্থায়ী লক এখনও আছে কিনা। যদি না থাকে, তাহলে আমরা শুধু এরর দেখাই। 
+      set((s) => {
+        if (s.bookedSlotKeys[compositeKey] !== temporaryId) {
+          return { isLoading: false, error: extractMessage(err) };
+        }
+        // যদি আমাদের অস্থায়ী লক এখনও আছে, তাহলে আমরা এটিকে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলে সেই সময় আর উক্ত উজারকে আমরা  এরর দেখাই।
+        const bookedSlotKeys = { ...s.bookedSlotKeys };
+        delete bookedSlotKeys[compositeKey];
+        return { bookedSlotKeys, isLoading: false, error: extractMessage(err) };
+      });
+
+      //booking ব্যর্থ হওয়ার পর backend থেকে ওই date-এর সর্বশেষ slot availability আবার এনে UI-কে সঠিক অবস্থায় নেওয়া।
+      void get().loadAvailability(service.id, date);
+
+      return null;
+    }
+  },
+
+  //cancelAppointment()-এর কাজ হলো আগে থেকে বুক করা upcoming appointment বাতিল করা। Appointment-এর status cancelled করে, সেই slot-কে আবার available করা এবং API-তে update পাঠানো। যদি API ব্যর্থ হয়, তাহলে আমরা আবার সেই slot-কে booked হিসেবে ফিরিয়ে দেই এবং error দেখাই।
+  cancelAppointment: async (appointmentId: string): Promise<boolean> => {
+    const appointment = get().appointments.find((a) => a.id === appointmentId);
 
 
-          if (appointment.status !== "upcoming") {
-            set({
-              error: `Only upcoming appointments can be cancelled. This one is "${appointment.status}".`,
-            });
-            return false;
-          }
-
-          const { compositeSlotKey } = appointment;
-
-          set((s) => {
-            // এর মাধ্যমে আমরা বুকিং বাতিল করার সময় লোকাল স্টোরেজে বুকিং স্লট লক করে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলতে না পারে। তাই প্রথমে সবগুলা কপি করে restKeys তে রাখি এবং তারপর compositeSlotKey কে delete করি। তারপর আমরা appointments-এর মধ্যে সেই appointment-এর status cancelled করে দেই।
-            const restKeys = { ...s.bookedSlotKeys };
-            delete restKeys[compositeSlotKey];
-            return {
-              appointments: s.appointments.map((a) =>
-                a.id === appointmentId
-                  ? ({
-                    ...a,
-                    status: "cancelled" as AppointmentStatus,
-                    cancelledAt: new Date().toISOString(),
-                  } satisfies Appointment)
-                  : a
-              ),
-              bookedSlotKeys: restKeys,
-              isLoading: true,
-              error: null,
-            };
-          });
-
-          try {
-            await _cancelAppointmentApi(appointmentId);
-            set({ isLoading: false });
-            return true;
-          } catch (err) {
-
-            //যদি API কল ব্যর্থ হয়, তাহলে আমরা আবার সেই স্লোট কে আবার ফিরিয়ে আনি যেন চাইলে অন্য কেও বুকিং করতে পারে।
-            set((s) => ({
-              appointments: s.appointments.map((a) =>
-                a.id === appointmentId
-                  ? ({ ...a, status: "upcoming" as AppointmentStatus, cancelledAt: undefined } satisfies Appointment)
-                  : a
-              ),
-              bookedSlotKeys: { ...s.bookedSlotKeys, [compositeSlotKey]: appointmentId },
-              isLoading: false,
-              error: extractMessage(err),
-            }));
-            return false;
-          }
-        },
+    if (!appointment) {
+      set({ error: `Appointment "${appointmentId}" was not found.` });
+      return false;
+    }
 
 
-        //loadAppointments() ব্যবহার করা হয়েছে backend থেকে বর্তমান user-এর সব appointment এনে Zustand-এর appointments state-এ রাখার জন্য, যাতে My Appointments পেজে সেগুলো দেখানো যায়।
-        loadAppointments: async (): Promise<void> => {
-          set({ isLoading: true, error: null });
+    if (appointment.status !== "upcoming") {
+      set({
+        error: `Only upcoming appointments can be cancelled. This one is "${appointment.status}".`,
+      });
+      return false;
+    }
 
-          try {
-            const appointments = await _getAppointmentsApi();
-            // এই response-এ শুধুমাত্র বর্তমান user-এর appointments-এর data থাকে।
-            set({ appointments, isLoading: false, error: null });
-          } catch (err) {
-            set({ isLoading: false, error: extractMessage(err) });
-          }
-        },
+    const { compositeSlotKey } = appointment;
 
+    set((s) => {
+      // এর মাধ্যমে আমরা বুকিং বাতিল করার সময় লোকাল স্টোরেজে বুকিং স্লট লক করে সরিয়ে দেই যাতে অন্য কেও বুকিং করে ফেলতে না পারে। তাই প্রথমে সবগুলা কপি করে restKeys তে রাখি এবং তারপর compositeSlotKey কে delete করি। তারপর আমরা appointments-এর মধ্যে সেই appointment-এর status cancelled করে দেই।
+      const restKeys = { ...s.bookedSlotKeys };
+      delete restKeys[compositeSlotKey];
+      return {
+        appointments: s.appointments.map((a) =>
+          a.id === appointmentId
+            ? ({
+              ...a,
+              status: "cancelled" as AppointmentStatus,
+              cancelledAt: new Date().toISOString(),
+            } satisfies Appointment)
+            : a
+        ),
+        bookedSlotKeys: restKeys,
+        isLoading: true,
+        error: null,
+      };
+    });
 
-        //Backend থেকে নির্দিষ্ট service ও date-এর booked slot নিয়ে আসে এবং সেই data-এর সাথে frontend-এ চলমান __pending_booking__ slot-গুলোও রেখে bookedSlotKeys update করে।
-        loadAvailability: async (serviceId: string, date: string): Promise<void> => {
-          try {
-            const bookedSlotKeys = await _getAvailabilityApi(serviceId, date);
-            set((state) => {
-              // Keep an optimistic lock while its POST request is in flight.
-              const pendingKeys = Object.fromEntries(
-                // প্রথম value (key) দরকার নেই
-                // দ্বিতীয় value-টা id নামে নেওয়া হচ্ছে
-                Object.entries(state.bookedSlotKeys).filter(([, id]) => id === "__pending_booking__")
-              );
-              return { bookedSlotKeys: { ...bookedSlotKeys, ...pendingKeys } };
-            });
-          } catch (err) {
-            set({ error: extractMessage(err) });
-          }
-        },
+    try {
+      await _cancelAppointmentApi(appointmentId);
+      set({ isLoading: false });
+      return true;
+    } catch (err) {
 
-        // যদি compositeKey এর মাধ্যমে কোন স্লট ইতিমধ্যেই বুক করা থাকে কিনা তা চেক করা হয়।
-        isSlotBooked: (compositeKey: string): boolean =>
-          Boolean(get().bookedSlotKeys[compositeKey]),
-
-
-        reset: () =>
-          set({
-            ...INITIAL_STATE,
-
-            appointments: [],
-            bookedSlotKeys: {},
-          }),
+      //যদি API কল ব্যর্থ হয়, তাহলে আমরা আবার সেই স্লোট কে আবার ফিরিয়ে আনি যেন চাইলে অন্য কেও বুকিং করতে পারে।
+      set((s) => ({
+        appointments: s.appointments.map((a) =>
+          a.id === appointmentId
+            ? ({ ...a, status: "upcoming" as AppointmentStatus, cancelledAt: undefined } satisfies Appointment)
+            : a
+        ),
+        bookedSlotKeys: { ...s.bookedSlotKeys, [compositeSlotKey]: appointmentId },
+        isLoading: false,
+        error: extractMessage(err),
       }));
+      return false;
+    }
+  },
+
+
+  //loadAppointments() ব্যবহার করা হয়েছে backend থেকে বর্তমান user-এর সব appointment এনে Zustand-এর appointments state-এ রাখার জন্য, যাতে My Appointments পেজে সেগুলো দেখানো যায়।
+  loadAppointments: async (): Promise<void> => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const appointments = await _getAppointmentsApi();
+      // এই response-এ শুধুমাত্র বর্তমান user-এর appointments-এর data থাকে।
+      set({ appointments, isLoading: false, error: null });
+    } catch (err) {
+      set({ isLoading: false, error: extractMessage(err) });
+    }
+  },
+
+
+  //Backend থেকে নির্দিষ্ট service ও date-এর booked slot নিয়ে আসে এবং সেই data-এর সাথে frontend-এ চলমান __pending_booking__ slot-গুলোও রেখে bookedSlotKeys update করে।
+  loadAvailability: async (serviceId: string, date: string): Promise<void> => {
+    try {
+      const bookedSlotKeys = await _getAvailabilityApi(serviceId, date);
+      set((state) => {
+        // Keep an optimistic lock while its POST request is in flight.
+        const pendingKeys = Object.fromEntries(
+          // প্রথম value (key) দরকার নেই
+          // দ্বিতীয় value-টা id নামে নেওয়া হচ্ছে
+          Object.entries(state.bookedSlotKeys).filter(([, id]) => id === "__pending_booking__")
+        );
+        return { bookedSlotKeys: { ...bookedSlotKeys, ...pendingKeys } };
+      });
+    } catch (err) {
+      set({ error: extractMessage(err) });
+    }
+  },
+
+  // যদি compositeKey এর মাধ্যমে কোন স্লট ইতিমধ্যেই বুক করা থাকে কিনা তা চেক করা হয়।
+  isSlotBooked: (compositeKey: string): boolean =>
+    Boolean(get().bookedSlotKeys[compositeKey]),
+
+
+  reset: () =>
+    set({
+      ...INITIAL_STATE,
+
+      appointments: [],
+      bookedSlotKeys: {},
+    }),
+}));
 
 
 // Zustand store থেকে নির্দিষ্ট নির্দিষ্ট data বের করার ছোট function লিখা হয়। এগুলোকে selector বলা হয়। এগুলো ব্যবহার করে component-গুলোকে শুধু প্রয়োজনীয় data access করতে সাহায্য করে এবং unnecessary re-renders কমায়।

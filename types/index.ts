@@ -103,38 +103,7 @@ export interface BookingFormValues {
   notes?: string;
 }
 
-/** Full payload sent to POST /appointments. */
-export interface CreateAppointmentPayload extends BookingFormValues {
-  serviceId: string;
-  slotId: string;
-  compositeSlotKey: string;
-}
-
-// ─── 4. API Contract Types ────────────────────────────────────────────────────
-
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
-
-export interface ApiError {
-  message: string;
-  /** Application-level error code for programmatic handling. */
-  code?: string;
-  /** Field name when the error is validation-related. */
-  field?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
-
-// ─── 5. Booking Store Types ───────────────────────────────────────────────────
+// ─── 4. Booking Store Types ───────────────────────────────────────────────────
 
 /** What the user has selected so far in the wizard. */
 export interface BookingSelection {
@@ -191,7 +160,7 @@ export interface BookingStoreActions {
 
 export type BookingStore = BookingStoreState & BookingStoreActions;
 
-// ─── 6. Service Store Types ───────────────────────────────────────────────────
+// ─── 5. Service Store Types ───────────────────────────────────────────────────
 
 export interface ServiceStoreState {
   /** Slot lists keyed by `${serviceId}::${date}`. */
