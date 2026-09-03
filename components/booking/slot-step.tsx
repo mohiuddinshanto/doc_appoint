@@ -40,10 +40,18 @@ export function SlotStep() {
   }, [cachedSlots, date, serviceId, setSlots]);
 
   // Availability belongs to all users, so refresh it whenever the selected
-  // doctor/service or date changes instead of relying on personal bookings.
+  // doctor/service or date changes, then refresh it every 10 seconds.
   useEffect(() => {
     if (!serviceId) return;
-    void loadAvailability(serviceId, date);
+
+    const refreshAvailability = () => {
+      void loadAvailability(serviceId, date);
+    };
+
+    refreshAvailability();
+    const intervalId = window.setInterval(refreshAvailability, 10_000);
+
+    return () => window.clearInterval(intervalId);
   }, [date, loadAvailability, serviceId]);
 
   const slots: TimeSlot[] = cachedSlots ?? [];
