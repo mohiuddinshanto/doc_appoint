@@ -22,7 +22,7 @@ export function HomeHero({
   }
 
   return (
-    <section className="relative -mt-[74px] overflow-hidden pt-[170px] pb-[110px] text-center bg-[radial-gradient(60%_60%_at_15%_20%,rgba(91,91,240,0.22),transparent_70%),radial-gradient(50%_55%_at_85%_15%,rgba(34,211,238,0.25),transparent_70%),radial-gradient(55%_60%_at_60%_100%,rgba(139,92,246,0.18),transparent_70%),#ffffff]">
+    <section className="hero-mesh relative -mt-[74px] overflow-hidden pt-[170px] pb-[110px] text-center bg-white">
       {/* Subtle Dot Grid Mask Pattern */}
       <div
         className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(11,16,32,0.07)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:linear-gradient(#000_30%,transparent_90%)]"

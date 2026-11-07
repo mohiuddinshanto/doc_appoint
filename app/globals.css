@@ -43,6 +43,22 @@ body {
   overflow-x: hidden;
 }
 
+/* Dark stats band */
+.band-dark {
+  background: radial-gradient(60% 120% at 0% 0%, rgba(91, 91, 240, 0.55), transparent 60%),
+              radial-gradient(50% 120% at 100% 100%, rgba(34, 211, 238, 0.35), transparent 60%),
+              #0b1020 !important;
+  color: #ffffff !important;
+}
+
+/* Hero mesh gradient */
+.hero-mesh {
+  background: radial-gradient(60% 60% at 15% 20%, rgba(91, 91, 240, 0.22), transparent 70%),
+              radial-gradient(50% 55% at 85% 15%, rgba(34, 211, 238, 0.25), transparent 70%),
+              radial-gradient(55% 60% at 60% 100%, rgba(139, 92, 246, 0.18), transparent 70%),
+              #ffffff;
+}
+
 /* Hide scrollbar on the horizontal date strip while keeping scrollability */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
