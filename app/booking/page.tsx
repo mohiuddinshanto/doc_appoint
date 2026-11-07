@@ -23,19 +23,19 @@ export default function BookingPage() {
     <div className="min-h-screen bg-[#f7f8fc]">
       <AppNavbar />
 
-      <main className="mx-auto max-w-[1120px] px-6 py-12">
+      <main className="mx-auto max-w-[1120px] px-4 sm:px-6 py-8 sm:py-12 w-full min-w-0 overflow-x-hidden">
         {/* Wizard not started — nothing selected yet */}
         {step === "service" && (
-          <div className="mx-auto max-w-[680px] rounded-[32px] border border-[#e4e7f2] bg-white p-8 sm:p-10 shadow-[0_24px_60px_-12px_rgba(40,40,120,0.20)] text-center">
-            <h1 className="mb-3 text-2xl font-extrabold text-[#0b1020] tracking-tight">
+          <div className="mx-auto max-w-[680px] w-full min-w-0 rounded-[24px] sm:rounded-[32px] border border-[#e4e7f2] bg-white p-6 sm:p-10 shadow-[0_24px_60px_-12px_rgba(40,40,120,0.20)] text-center">
+            <h1 className="mb-2 text-xl sm:text-2xl font-extrabold text-[#0b1020] tracking-tight">
               Start a booking
             </h1>
-            <p className="mb-6 text-sm text-[#687089]">
+            <p className="mb-6 text-xs sm:text-sm text-[#687089]">
               Pick a specialist doctor first — then choose your date and time here.
             </p>
             <Link
               href="/services"
-              className="inline-flex items-center gap-2 rounded-full bg-[#0b1020] px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] transition-all"
+              className="inline-flex items-center gap-2 rounded-full bg-[#0b1020] px-6 py-3 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] transition-all"
             >
               Browse Doctors &amp; Services
             </Link>
@@ -43,7 +43,7 @@ export default function BookingPage() {
         )}
 
         {step !== "service" && (
-          <div className="mx-auto max-w-[680px] rounded-[32px] border border-[#e4e7f2] bg-white p-6 sm:p-10 shadow-[0_24px_60px_-12px_rgba(40,40,120,0.20)]">
+          <div className="mx-auto max-w-[680px] w-full min-w-0 rounded-[24px] sm:rounded-[32px] border border-[#e4e7f2] bg-white p-5 sm:p-8 md:p-10 shadow-[0_24px_60px_-12px_rgba(40,40,120,0.20)]">
             <StepIndicator current={step} />
 
             {error && step !== "confirm" && (

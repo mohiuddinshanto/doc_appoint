@@ -58,15 +58,15 @@ export function ServicesPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fc]">
       <AppNavbar />
-      <main className="mx-auto max-w-[1120px] px-6 pt-10 pb-16">
-        <div className="mb-8 max-w-2xl">
-          <span className="mb-2.5 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
+      <main className="mx-auto max-w-[1120px] px-4 sm:px-6 pt-6 sm:pt-10 pb-16 w-full min-w-0 overflow-x-hidden">
+        <div className="mb-6 sm:mb-8 max-w-2xl">
+          <span className="mb-2 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
             Doctors &amp; services
           </span>
-          <h1 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0b1020]">
+          <h1 className="mt-1.5 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#0b1020]">
             Find the right care for you
           </h1>
-          <p className="mt-2.5 text-[#687089]">
+          <p className="mt-2 text-xs sm:text-sm text-[#687089]">
             Search the full catalogue, filter by specialty, and book an available slot.
           </p>
         </div>

@@ -26,25 +26,25 @@ export function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="mx-auto mt-28 max-w-[760px]">
-      <h2 className="text-center text-3xl sm:text-4xl font-extrabold text-[#0b1020] tracking-tight mb-10">
+    <section className="mx-auto mt-20 sm:mt-28 max-w-[760px] w-full min-w-0">
+      <h2 className="text-center text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0b1020] tracking-tight mb-8 sm:mb-10">
         Common questions
       </h2>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 w-full min-w-0">
         {FAQS.map((faq, idx) => {
           const isOpen = openIndex === idx;
           return (
             <div
               key={faq.q}
-              className="overflow-hidden rounded-[22px] border border-[#e4e7f2]/60 bg-white shadow-[0_1px_2px_rgba(11,16,32,0.04),0_8px_24px_-8px_rgba(40,40,120,0.10)] transition-all"
+              className="overflow-hidden rounded-[20px] sm:rounded-[22px] border border-[#e4e7f2]/60 bg-white shadow-[0_1px_2px_rgba(11,16,32,0.04),0_8px_24px_-8px_rgba(40,40,120,0.10)] transition-all"
             >
               <button
                 type="button"
                 onClick={() => setOpenIndex(isOpen ? null : idx)}
-                className="flex w-full items-center justify-between gap-4 p-5 sm:p-6 text-left font-bold text-[#0b1020]"
+                className="flex w-full items-center justify-between gap-3 p-4 sm:p-6 text-left font-bold text-[#0b1020]"
               >
-                <span className="text-base sm:text-lg">{faq.q}</span>
+                <span className="text-sm sm:text-base md:text-lg">{faq.q}</span>
                 <span
                   className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full text-sm font-bold transition-transform ${
                     isOpen

@@ -51,15 +51,15 @@ export function HomeHero({
       </div>
 
       {/* Main Container */}
-      <div className="relative mx-auto max-w-[1120px] px-6">
+      <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6">
         {/* Trust Tag */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#e4e7f2] bg-white/75 px-4 py-1.5 text-[13px] font-semibold text-[#2b2b9e] shadow-sm backdrop-blur-md mb-6">
-          <LuHeart className="text-[#e11d48]" size={15} />
-          <span>Trusted Healthcare Booking Platform</span>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#e4e7f2] bg-white/75 px-3.5 py-1.5 text-xs sm:text-[13px] font-semibold text-[#2b2b9e] shadow-sm backdrop-blur-md mb-6 max-w-full">
+          <LuHeart className="text-[#e11d48] shrink-0" size={15} />
+          <span className="truncate">Trusted Healthcare Booking Platform</span>
         </div>
 
         {/* Hero Title */}
-        <h1 className="mx-auto max-w-[12em] text-[40px] sm:text-[56px] md:text-[68px] font-extrabold tracking-[-0.045em] leading-[1.02] bg-gradient-to-b from-[#0b1020] via-[#0b1020] to-[#3b3f8f] bg-clip-text text-transparent">
+        <h1 className="mx-auto max-w-[12em] text-[32px] sm:text-[52px] md:text-[68px] font-extrabold tracking-[-0.045em] leading-[1.05] sm:leading-[1.02] bg-gradient-to-b from-[#0b1020] via-[#0b1020] to-[#3b3f8f] bg-clip-text text-transparent">
           Find &amp; Book Top-Rated Doctors
         </h1>
 

@@ -68,15 +68,15 @@ export default function AppointmentsPage() {
     <div className="min-h-screen bg-[#f7f8fc]">
       <AppNavbar />
 
-      <main className="mx-auto max-w-[780px] px-6 pt-10 pb-16">
-        <div className="mb-7">
-          <span className="mb-2.5 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
+      <main className="mx-auto max-w-[780px] px-4 sm:px-6 pt-6 sm:pt-10 pb-16 w-full min-w-0 overflow-x-hidden">
+        <div className="mb-6 sm:mb-7">
+          <span className="mb-2 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
             Patient Dashboard
           </span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#0b1020]">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0b1020]">
             My Appointments
           </h1>
-          <p className="mt-1 text-sm text-[#687089]">
+          <p className="mt-1 text-xs sm:text-sm text-[#687089]">
             Manage upcoming consultations and view appointment records.
           </p>
         </div>

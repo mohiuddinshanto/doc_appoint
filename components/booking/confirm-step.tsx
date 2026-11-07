@@ -106,7 +106,7 @@ export function ConfirmStep() {
       </div>
 
       {/* Summary Box */}
-      <div className="mb-6 flex items-center justify-between rounded-[20px] border border-[#c7d2fe] bg-[#eef0ff] p-4 sm:p-5">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[20px] border border-[#c7d2fe] bg-[#eef0ff] p-4 sm:p-5">
         <div>
           <p className="text-base font-bold text-[#0b1020]">{service?.name}</p>
           <p className="text-xs text-[#5b5bf0] font-semibold">{service?.category}</p>
@@ -114,9 +114,9 @@ export function ConfirmStep() {
             {date} · {slot?.startTime}–{slot?.endTime}
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-[#c7d2fe]/60">
           <span className="text-[11px] font-bold uppercase text-[#99a0b8]">Total</span>
-          <p className="text-2xl font-extrabold text-[#5b5bf0]">
+          <p className="text-xl sm:text-2xl font-extrabold text-[#5b5bf0]">
             ${service?.price}
           </p>
         </div>
@@ -187,18 +187,18 @@ export function ConfirmStep() {
           />
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#f0f2f9] pt-6">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#f0f2f9] pt-6">
           <button
             type="button"
             onClick={handleCancel}
-            className="rounded-full border border-[#e4e7f2] bg-white px-5 py-2.5 text-sm font-semibold text-[#0b1020] hover:border-[#5b5bf0] transition-colors"
+            className="inline-flex items-center justify-center rounded-full border border-[#e4e7f2] bg-white px-5 py-2.5 text-sm font-semibold text-[#0b1020] hover:border-[#5b5bf0] transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-full bg-[#0b1020] px-7 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] hover:shadow-lg disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0b1020] px-7 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] hover:shadow-lg disabled:opacity-50"
           >
             <LuCheck size={16} />
             <span>{submitting ? "Booking…" : "Confirm & Book Appointment"}</span>

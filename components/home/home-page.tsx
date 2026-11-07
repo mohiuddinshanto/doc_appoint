@@ -67,28 +67,28 @@ export function HomePage() {
         onBrowseServices={() => router.push("/services")}
       />
 
-      <main className="mx-auto max-w-[1120px] px-6 py-14">
+      <main className="mx-auto max-w-[1120px] px-4 sm:px-6 py-8 sm:py-14 w-full min-w-0 overflow-x-hidden">
         {/* Featured Doctors Section */}
-        <section>
-          <div className="mb-9 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <section className="w-full min-w-0">
+          <div className="mb-7 sm:mb-9 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="mb-2.5 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
+              <span className="mb-2 inline-block rounded-full bg-[#eef0ff] px-3.5 py-1 text-xs font-bold text-[#5b5bf0]">
                 Featured care
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0b1020] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0b1020] tracking-tight">
                 Featured doctors
               </h2>
-              <p className="mt-2 text-[#687089]">
+              <p className="mt-1.5 text-xs sm:text-sm text-[#687089]">
                 Start with a trusted specialist, then choose a time that suits you.
               </p>
             </div>
             <button
               type="button"
               onClick={() => router.push("/services")}
-              className="inline-flex items-center gap-2 rounded-full border border-[#e4e7f2] bg-white px-5 py-2.5 text-sm font-semibold text-[#0b1020] transition-all hover:border-[#5b5bf0] hover:text-[#5b5bf0]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#e4e7f2] bg-white px-5 py-2.5 text-xs sm:text-sm font-semibold text-[#0b1020] transition-all hover:border-[#5b5bf0] hover:text-[#5b5bf0] self-start sm:self-auto"
             >
               <span>View all services</span>
-              <LuArrowRight size={16} />
+              <LuArrowRight size={15} />
             </button>
           </div>
 

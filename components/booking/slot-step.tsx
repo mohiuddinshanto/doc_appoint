@@ -75,11 +75,11 @@ export function SlotStep() {
       </div>
 
       {/* Date Selector (7 days) */}
-      <div className="mb-6">
+      <div className="mb-6 w-full min-w-0">
         <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#99a0b8]">
           Select Date
         </label>
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:grid sm:grid-cols-7 sm:overflow-visible sm:pb-0">
           {next7Days.map((d) => {
             const dateObj = new Date(`${d}T12:00:00`);
             const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
@@ -91,7 +91,7 @@ export function SlotStep() {
                 key={d}
                 type="button"
                 onClick={() => selectDate(d)}
-                className={`flex flex-col items-center justify-center rounded-[18px] border py-3 px-1 transition-all ${
+                className={`flex flex-col items-center justify-center rounded-[18px] border py-2.5 sm:py-3 px-3 sm:px-1 min-w-[62px] sm:min-w-0 transition-all ${
                   isSelected
                     ? "border-[#0b1020] bg-[#0b1020] text-white shadow-[0_10px_22px_-8px_rgba(11,16,32,0.6)]"
                     : "border-[#e4e7f2] bg-white text-[#0b1020] hover:border-[#5b5bf0]"

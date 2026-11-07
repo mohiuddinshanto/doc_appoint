@@ -13,7 +13,7 @@ export function AppointmentCard({ appointment, onCancel }: AppointmentCardProps)
   const isCancelled = appointment.status === "cancelled";
 
   return (
-    <div className="rounded-[28px] border border-[#e4e7f2]/60 bg-white p-6 sm:p-7 shadow-[0_1px_2px_rgba(11,16,32,0.04),0_8px_24px_-8px_rgba(40,40,120,0.10)] mb-4">
+    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-[24px] sm:rounded-[28px] border border-[#e4e7f2]/60 bg-white p-5 sm:p-7 shadow-[0_1px_2px_rgba(11,16,32,0.04),0_8px_24px_-8px_rgba(40,40,120,0.10)] mb-4">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="text-lg font-bold text-[#0b1020]">
