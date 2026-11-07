@@ -1,18 +1,46 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ink: #0b1020;
+  --primary: #5b5bf0;
+  --primary-hover: #4747d6;
+  --primary-light: #eef0ff;
+  --primary-dark: #2b2b9e;
+  --cyan: #22d3ee;
+  --grad: linear-gradient(135deg, #5b5bf0 0%, #8b5cf6 55%, #22d3ee 130%);
+  --slate-50: #f7f8fc;
+  --slate-100: #f0f2f9;
+  --slate-200: #e4e7f2;
+  --slate-300: #cdd2e3;
+  --slate-400: #99a0b8;
+  --slate-500: #687089;
+  --slate-600: #4d546b;
+  --slate-700: #363c52;
+  --slate-800: #1f2437;
+  --slate-900: #0b1020;
+  --rose-500: #e11d48;
+  --rose-50: #fff1f4;
+  --card-shadow: 0 1px 2px rgba(11, 16, 32, .04), 0 8px 24px -8px rgba(40, 40, 120, .10);
+  --shadow-lg: 0 24px 60px -12px rgba(40, 40, 120, .25);
+}
+
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  background-color: var(--slate-50);
+  color: var(--ink);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar on the horizontal date strip while keeping scrollability */
@@ -22,4 +50,35 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Animations from index.html */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite -3s;
+}
+
+.animate-float-slow {
+  animation: float 9s ease-in-out infinite;
+}
+
+.animate-float-slow-delayed {
+  animation: float 9s ease-in-out infinite -4s;
+}
+
+/* Details summary custom marker */
+details summary::-webkit-details-marker {
+  display: none;
 }

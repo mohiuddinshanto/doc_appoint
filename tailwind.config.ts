@@ -13,8 +13,23 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        sans: ["Manrope", "Inter", "system-ui", "sans-serif"],
+        display: ["Manrope", "Plus Jakarta Sans", "sans-serif"],
+      },
+      colors: {
+        ink: "#0b1020",
+        brand: {
+          50: "#eef0ff",
+          100: "#e0e3ff",
+          200: "#c7cbfe",
+          300: "#a5aafd",
+          400: "#8184fa",
+          500: "#5b5bf0",
+          600: "#4747d6",
+          700: "#3636b0",
+          800: "#2b2b9e",
+          900: "#1e1e6f",
+        },
       },
     },
   },

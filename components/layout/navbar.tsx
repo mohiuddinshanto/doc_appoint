@@ -1,20 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
-import {
-  Badge,
-  Link,
-  Navbar as HeroNavbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Button,
-  Avatar,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LuCalendarCheck as CalendarCheck,
   LuLogOut,
@@ -23,7 +11,6 @@ import {
   LuMenu,
   LuX,
 } from "react-icons/lu";
-import { usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { selectUpcomingCount, useBookingStore } from "@/store/useBookingStore";
@@ -45,6 +32,7 @@ export function AppNavbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -54,216 +42,156 @@ export function AppNavbar() {
     logout();
     useBookingStore.getState().reset();
     toast.success("Signed out successfully.");
+    setUserDropdownOpen(false);
   };
 
   return (
     <>
-      <HeroNavbar
-        isBordered
-        classNames={{
-          base: "bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/80 shadow-sm",
-          wrapper: "max-w-6xl px-4 sm:px-6",
-        }}
-      >
-        {/* লোগো এবং ব্র্যান্ড নামের জন্য NavbarBrand ব্যবহার করা হয়েছে। ব্র্যান্ড নাম "DocAppoint" এবং সাবটাইটেল "Health & Wellness" দেখানো হয়েছে। */}
-        <NavbarBrand className="gap-2.5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20">
-              <LuStethoscope size={20} />
+      <header className="sticky top-3.5 z-50 mx-auto w-[min(1120px,calc(100%-32px))] rounded-full border border-white/80 bg-white/75 shadow-[0_1px_2px_rgba(11,16,32,0.04),0_8px_24px_-8px_rgba(40,40,120,0.10)] backdrop-blur-xl transition-all">
+        <div className="flex h-[60px] items-center justify-between px-3 sm:px-5">
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
+            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[11px] bg-gradient-to-tr from-[#5b5bf0] via-[#8b5cf6] to-[#22d3ee] text-white shadow-[0_6px_16px_-4px_rgba(91,91,240,0.6)]">
+              <LuStethoscope size={18} />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-lg font-bold tracking-tight text-gray-900 leading-none">
+              <span className="text-[17px] font-extrabold tracking-tight text-[#0b1020] leading-none">
                 DocAppoint
-              </span>
-              <span className="text-[10px] font-medium text-indigo-600 tracking-wide uppercase">
-                Health & Wellness
               </span>
             </div>
           </Link>
-        </NavbarBrand>
 
-        {/* NavbarContent ব্যবহার করে নেভিগেশন লিঙ্কগুলি প্রদর্শন করা হয়েছে। sm স্ক্রিন সাইজের উপরে লিঙ্কগুলি প্রদর্শিত হবে, এবং ছোট স্ক্রিনে হ্যামবার্গার মেনু ব্যবহার করা হবে। */}
-        <NavbarContent justify="center" className="hidden lg:flex gap-1">
-          {NAV_ITEMS.map(({ href, label }) => (
-            <NavbarItem key={href} isActive={isActive(href)}>
-              <Link
-                href={href}
-                size="sm"
-                className={`rounded-lg px-3.5 py-2 font-medium transition-all ${isActive(href)
-                  ? "bg-indigo-50 text-indigo-700 font-semibold"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          {/* Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {NAV_ITEMS.map(({ href, label }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                    active
+                      ? "bg-[#eef0ff] text-[#5b5bf0]"
+                      : "text-[#687089] hover:bg-[#f0f2f9] hover:text-[#0b1020]"
                   }`}
-              >
-                {label}
-              </Link>
-            </NavbarItem>
-          ))}
-        </NavbarContent>
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
 
-
-        <NavbarContent justify="end" className="hidden lg:flex gap-3">
-          {/* My Appointments লিঙ্কের জন্য একটি Badge ব্যবহার করা হয়েছে যা upcomingCount দেখায়। যদি mounted না হয় বা upcomingCount শূন্য হয়, তবে Badge অদৃশ্য থাকবে। */}
-          <NavbarItem>
-            <Badge
-              content={mounted ? upcomingCount : 0}
-              color="primary"
-              shape="circle"
-              size="sm"
-              isInvisible={!mounted || upcomingCount === 0}
-            >
+          {/* Right Actions */}
+          <div className="flex items-center gap-2.5">
+            {/* My Appointments Pill */}
+            <div className="relative">
               <Link
                 href="/appointments"
-                size="sm"
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${isActive("/appointments")
-                  ? "bg-indigo-50 text-indigo-700 font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
-                  }`}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                  isActive("/appointments")
+                    ? "border-[#5b5bf0] bg-[#eef0ff] text-[#5b5bf0]"
+                    : "border-[#e4e7f2] bg-white text-[#0b1020] hover:border-[#5b5bf0] hover:text-[#5b5bf0]"
+                }`}
               >
-                <CalendarCheck size={16} />
+                <CalendarCheck size={16} className="text-[#5b5bf0]" />
                 <span className="hidden sm:inline">My Appointments</span>
               </Link>
-            </Badge>
-          </NavbarItem>
+              {mounted && upcomingCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-gradient-to-r from-[#5b5bf0] to-[#22d3ee] px-1 text-[10px] font-extrabold text-white">
+                  {upcomingCount}
+                </span>
+              )}
+            </div>
 
-          {/* ব্যবহারকারীর প্রোফাইল এবং লগআউটের জন্য একটি Dropdown ব্যবহার করা হয়েছে। যদি ব্যবহারকারী লগইন না করে থাকে, তবে একটি Sign In বাটন প্রদর্শিত হবে যা AuthModal খুলবে। */}
-          <NavbarItem>
+            {/* Auth Button or User Dropdown */}
             {mounted && isAuthenticated && user ? (
-              <Dropdown placement="bottom-end">
-                <DropdownTrigger>
-                  <Button
-                    variant="light"
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-gray-200 hover:border-gray-300 bg-gray-50/80"
-                  >
-                    <Avatar
-                      name={user.name}
-                      size="sm"
-                      className="bg-indigo-600 text-white font-bold text-xs"
-                    />
-                    <span className="text-sm font-semibold text-gray-800 max-w-[100px] truncate">
-                      {user.name}
-                    </span>
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu aria-label="User actions">
-                  <DropdownItem key="profile" className="h-14 gap-2">
-                    <p className="font-semibold text-xs text-gray-400">Signed in as</p>
-                    <p className="font-bold text-sm text-gray-800">{user.email}</p>
-                  </DropdownItem>
-                  <DropdownItem
-                    key="logout"
-                    color="danger"
-                    startContent={<LuLogOut size={16} />}
-                    onPress={handleSignOut}
-                  >
-                    Sign Out
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen((v) => !v)}
+                  className="flex items-center gap-2 rounded-full border border-[#e4e7f2] bg-white px-3 py-1.5 text-sm font-semibold text-[#0b1020] hover:border-[#5b5bf0] transition-all"
+                >
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#5b5bf0] text-xs font-bold text-white">
+                    {user.name ? user.name.slice(0, 2).toUpperCase() : "U"}
+                  </div>
+                  <span className="hidden sm:inline max-w-[90px] truncate">{user.name}</span>
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-[#e4e7f2] bg-white p-2 shadow-xl z-50">
+                    <div className="px-3 py-2 border-b border-[#f0f2f9]">
+                      <p className="text-[11px] text-[#99a0b8]">Signed in as</p>
+                      <p className="text-xs font-bold text-[#0b1020] truncate">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <LuLogOut size={14} />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <Button
-                color="primary"
-                size="sm"
-                variant="solid"
-                startContent={<LuLogIn size={16} />}
-                className="font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm hover:shadow transition-all rounded-xl"
-                onPress={() => setAuthModalOpen(true)}
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-[#0b1020] px-5 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_-8px_rgba(11,16,32,0.6)] transition-all hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] hover:-translate-y-0.5"
               >
-                Sign In
-              </Button>
+                <LuLogIn size={15} />
+                <span>Sign In</span>
+              </button>
             )}
-          </NavbarItem>
-        </NavbarContent>
 
-        {/*/ ছোট স্ক্রিনে হ্যামবার্গার মেনু প্রদর্শনের জন্য NavbarContent ব্যবহার করা হয়েছে। একটি বাটন ব্যবহার করে মেনু খোলা এবং বন্ধ করা যায়।*/}
-        <NavbarContent justify="end" className="lg:hidden gap-1">
-          <NavbarItem>
-            <Button
-              isIconOnly
-              variant="light"
-              aria-label="Open navigation menu"
-              className="text-gray-700 rounded-xl"
-              onPress={() => setMobileOpen((v) => !v)}
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label="Toggle menu"
+              className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#f0f2f9] text-[#0b1020] lg:hidden hover:bg-[#e4e7f2] transition-colors"
             >
-              {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
-            </Button>
-          </NavbarItem>
-        </NavbarContent>
-      </HeroNavbar>
+              {mobileOpen ? <LuX size={18} /> : <LuMenu size={18} />}
+            </button>
+          </div>
+        </div>
 
-      {mobileOpen && (
-        <div className="border-b border-gray-100 bg-white/95 shadow-md backdrop-blur-md lg:hidden">
-          <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
-            <nav className="flex flex-col gap-1">
+        {/* Mobile Dropdown Menu */}
+        {mobileOpen && (
+          <div className="absolute top-[68px] left-0 right-0 rounded-[24px] border border-[#e4e7f2] bg-white/95 p-4 shadow-[0_24px_60px_-12px_rgba(40,40,120,0.25)] backdrop-blur-xl lg:hidden">
+            <nav className="flex flex-col gap-1.5">
               {NAV_ITEMS.map(({ href, label }) => (
                 <Link
                   key={href}
                   href={href}
-                  onPress={() => setMobileOpen(false)}
-                  className={`rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${isActive(href)
-                    ? "bg-indigo-50 text-indigo-700 font-semibold"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
+                  onClick={() => setMobileOpen(false)}
+                  className={`rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                    isActive(href)
+                      ? "bg-[#eef0ff] text-[#5b5bf0]"
+                      : "text-[#687089] hover:bg-[#f0f2f9] hover:text-[#0b1020]"
+                  }`}
                 >
                   {label}
                 </Link>
               ))}
               <Link
                 href="/appointments"
-                onPress={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all ${isActive("/appointments")
-                  ? "bg-indigo-50 text-indigo-700 font-semibold"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                  isActive("/appointments")
+                    ? "bg-[#eef0ff] text-[#5b5bf0]"
+                    : "text-[#687089] hover:bg-[#f0f2f9] hover:text-[#0b1020]"
+                }`}
               >
                 <CalendarCheck size={16} />
-                My Appointments
+                My Appointments {mounted && upcomingCount > 0 && `(${upcomingCount})`}
               </Link>
-
-              <div className="mt-2 border-t border-gray-100 pt-3">
-                {mounted && isAuthenticated && user ? (
-                  <div className="flex items-center justify-between gap-3 px-3.5">
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-400">Signed in as</p>
-                      <p className="truncate text-sm font-semibold text-gray-800">
-                        {user.email}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      color="danger"
-                      variant="flat"
-                      startContent={<LuLogOut size={15} />}
-                      onPress={() => {
-                        setMobileOpen(false);
-                        void handleSignOut();
-                      }}
-                    >
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    color="primary"
-                    className="w-full font-semibold"
-                    startContent={<LuLogIn size={16} />}
-                    onPress={() => {
-                      setMobileOpen(false);
-                      setAuthModalOpen(true);
-                    }}
-                  >
-                    Sign In
-                  </Button>
-                )}
-              </div>
             </nav>
           </div>
-        </div>
-      )}
+        )}
+      </header>
 
-      <AuthModal
-        isOpen={authModalOpen}
-        onOpenChange={setAuthModalOpen}
-      />
+      <AuthModal isOpen={authModalOpen} onOpenChange={setAuthModalOpen} />
     </>
   );
 }

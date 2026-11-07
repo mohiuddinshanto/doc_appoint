@@ -1,10 +1,9 @@
 "use client";
 
-import { Button, Input, Textarea } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { FaArrowLeft } from "react-icons/fa6";
+import { LuArrowLeft, LuCheck } from "react-icons/lu";
 import {
   selectSelection,
   useBookingStore,
@@ -26,7 +25,6 @@ const EMPTY_FORM: FormValues = {
   notes: "",
 };
 
-// এইখানে আমরা ফরম ফিল্ড আপডেট করতে পারি এবং সেই ফিল্ডের শো করা error মুছে ফেলতে পারি।
 export function ConfirmStep() {
   const router = useRouter();
   const { service, slot, date } = useBookingStore(selectSelection);
@@ -38,21 +36,19 @@ export function ConfirmStep() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // এইটার মাধ্যমে আমরা ফরম ফিল্ড আপডেট করতে পারি এবং সেই ফিল্ডের শো করা error মুছে ফেলতে পারি।
   const updateField =
     (field: keyof FormValues) =>
-      (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      ) => {
-        setForm((f) => ({ ...f, [field]: e.target.value }));
-        setErrors((prev) => ({ ...prev, [field]: undefined }));
-      };
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
 
   function validate(): boolean {
     const next: FormErrors = {};
 
-    if (!form.customerName.trim())
+    if (!form.customerName.trim()) {
       next.customerName = "Full name is required.";
+    }
 
     if (!form.customerEmail.trim()) {
       next.customerEmail = "Email is required.";
@@ -65,11 +61,9 @@ export function ConfirmStep() {
     }
 
     setErrors(next);
-
     return Object.keys(next).length === 0;
   }
 
-  
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate() || submitting) return;
@@ -82,8 +76,7 @@ export function ConfirmStep() {
       toast.success("Booking confirmed! See you soon.");
     } else {
       toast.error(
-        useBookingStore.getState().error ??
-        "Something went wrong. Please try again."
+        useBookingStore.getState().error ?? "Something went wrong. Please try again."
       );
     }
   }
@@ -95,109 +88,121 @@ export function ConfirmStep() {
 
   return (
     <div>
-      <button
-        type="button"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-indigo-500 hover:underline"
-        onClick={() => setStep("slot")}
-      >
-        <FaArrowLeft size={12} /> Change time
-      </button>
-      <h2 className="mb-1 text-xl font-bold text-gray-900">
-        Confirm Your Booking
-      </h2>
-
-      {/* Summary card */}
-      <div className="mb-6 mt-4 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-4">
-        <p className="mb-2 font-bold text-indigo-800">{service?.name}</p>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-indigo-700">
-          <dt>Provider</dt>
-          <dd className="font-medium">{service?.providerName}</dd>
-          <dt>Date</dt>
-          <dd className="font-medium">{date}</dd>
-          <dt>Time</dt>
-          <dd className="font-medium">
-            {slot?.startTime} – {slot?.endTime}
-          </dd>
-          <dt>Duration</dt>
-          <dd className="font-medium">{service?.durationMinutes} min</dd>
-          <dt>Total</dt>
-          <dd className="font-bold text-indigo-900">
-            ${service?.price} {service?.currency}
-          </dd>
-        </dl>
+      <div className="mb-5">
+        <button
+          type="button"
+          onClick={() => setStep("slot")}
+          className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#e4e7f2] bg-white px-3.5 py-1 text-xs font-semibold text-[#0b1020] hover:border-[#5b5bf0] hover:text-[#5b5bf0] transition-colors"
+        >
+          <LuArrowLeft size={13} />
+          <span>Change Slot</span>
+        </button>
+        <h2 className="text-2xl font-extrabold text-[#0b1020] tracking-tight">
+          Confirm Your Booking
+        </h2>
+        <p className="mt-1 text-sm text-[#687089]">
+          Provide patient contact information to finalize the appointment.
+        </p>
       </div>
 
+      {/* Summary Box */}
+      <div className="mb-6 flex items-center justify-between rounded-[20px] border border-[#c7d2fe] bg-[#eef0ff] p-4 sm:p-5">
+        <div>
+          <p className="text-base font-bold text-[#0b1020]">{service?.name}</p>
+          <p className="text-xs text-[#5b5bf0] font-semibold">{service?.category}</p>
+          <p className="mt-1 text-xs sm:text-sm text-[#687089]">
+            {date} · {slot?.startTime}–{slot?.endTime}
+          </p>
+        </div>
+        <div className="text-right">
+          <span className="text-[11px] font-bold uppercase text-[#99a0b8]">Total</span>
+          <p className="text-2xl font-extrabold text-[#5b5bf0]">
+            ${service?.price}
+          </p>
+        </div>
+      </div>
+
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input
-            label="Full Name"
-            labelPlacement="outside"
+        <div>
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#687089]">
+            Full Name *
+          </label>
+          <input
+            type="text"
             placeholder="Jane Smith"
             value={form.customerName}
             onChange={updateField("customerName")}
-            isInvalid={Boolean(errors.customerName)}
-            errorMessage={errors.customerName}
-            radius="lg"
-            classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "mb-2",label: "pb-1.5" }}
+            className="w-full rounded-[16px] border border-[#e4e7f2] bg-[#f7f8fc] px-4 py-3 text-[15px] text-[#0b1020] outline-none transition-all focus:border-[#5b5bf0] focus:bg-white focus:ring-4 focus:ring-[#5b5bf0]/10"
           />
-          <Input
-            type="email"
-            label="Email"
-            labelPlacement="outside"
-            placeholder="jane@example.com"
-            value={form.customerEmail}
-            onChange={updateField("customerEmail")}
-            isInvalid={Boolean(errors.customerEmail)}
-            errorMessage={errors.customerEmail}
-            radius="lg"
-           classNames={{ inputWrapper: "bg-gray-50",mainWrapper: "m-2",label: "pb-1.5" }}
+          {errors.customerName && (
+            <p className="mt-1 text-xs font-semibold text-rose-500">{errors.customerName}</p>
+          )}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#687089]">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              placeholder="jane@example.com"
+              value={form.customerEmail}
+              onChange={updateField("customerEmail")}
+              className="w-full rounded-[16px] border border-[#e4e7f2] bg-[#f7f8fc] px-4 py-3 text-[15px] text-[#0b1020] outline-none transition-all focus:border-[#5b5bf0] focus:bg-white focus:ring-4 focus:ring-[#5b5bf0]/10"
+            />
+            {errors.customerEmail && (
+              <p className="mt-1 text-xs font-semibold text-rose-500">{errors.customerEmail}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#687089]">
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              placeholder="+880 1700-000000"
+              value={form.customerPhone}
+              onChange={updateField("customerPhone")}
+              className="w-full rounded-[16px] border border-[#e4e7f2] bg-[#f7f8fc] px-4 py-3 text-[15px] text-[#0b1020] outline-none transition-all focus:border-[#5b5bf0] focus:bg-white focus:ring-4 focus:ring-[#5b5bf0]/10"
+            />
+            {errors.customerPhone && (
+              <p className="mt-1 text-xs font-semibold text-rose-500">{errors.customerPhone}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#687089]">
+            Notes or Symptoms (Optional)
+          </label>
+          <textarea
+            rows={3}
+            placeholder="Briefly describe your symptoms or reason for visit..."
+            value={form.notes}
+            onChange={updateField("notes")}
+            className="w-full rounded-[16px] border border-[#e4e7f2] bg-[#f7f8fc] px-4 py-3 text-[15px] text-[#0b1020] outline-none transition-all focus:border-[#5b5bf0] focus:bg-white focus:ring-4 focus:ring-[#5b5bf0]/10"
           />
         </div>
 
-        <Input
-          type="tel"
-          label="Phone"
-          labelPlacement="outside"
-          placeholder="+1 555 000 0000"
-          value={form.customerPhone}
-          isInvalid={Boolean(errors.customerPhone)}
-          errorMessage={errors.customerPhone}
-          onChange={updateField("customerPhone")}
-          radius="lg"
-          classNames={{ inputWrapper: "bg-gray-50", mainWrapper: "mt-4", label: "pb-1.5" }}
-        />
-
-        <Textarea
-          label="Notes (optional)"
-          labelPlacement="outside"
-          placeholder="Any special requests or information for your provider…"
-          value={form.notes}
-          onChange={updateField("notes")}
-          minRows={2}
-          maxRows={4}
-          radius="lg"
-          classNames={{ inputWrapper: "bg-gray-50" }}
-        />
-
-        <div className="flex gap-3 pt-2">
-          <Button
+        <div className="flex items-center justify-between border-t border-[#f0f2f9] pt-6">
+          <button
             type="button"
-            variant="bordered"
-            radius="lg"
-            className="flex-1 font-semibold"
-            onPress={handleCancel}
+            onClick={handleCancel}
+            className="rounded-full border border-[#e4e7f2] bg-white px-5 py-2.5 text-sm font-semibold text-[#0b1020] hover:border-[#5b5bf0] transition-colors"
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
             type="submit"
-            color="primary"
-            radius="lg"
-            className="flex-1 font-semibold"
-            isLoading={submitting}
+            disabled={submitting}
+            className="inline-flex items-center gap-2 rounded-full bg-[#0b1020] px-7 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-gradient-to-r hover:from-[#5b5bf0] hover:to-[#8b5cf6] hover:shadow-lg disabled:opacity-50"
           >
-            {submitting ? "Booking…" : "Confirm Booking"}
-          </Button>
+            <LuCheck size={16} />
+            <span>{submitting ? "Booking…" : "Confirm & Book Appointment"}</span>
+          </button>
         </div>
       </form>
     </div>
